@@ -4,6 +4,8 @@
 /node_modules
 /.pnp
 .pnp.*
+
+# package managers
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
@@ -16,12 +18,19 @@
 # next.js
 /.next/
 /out/
+/.turbo
 
 # production
 /build
 
 # misc
 .DS_Store
+.idea
+.vscode
+.eslintcache
+*.swp
+*.swo
+*.swn
 *.pem
 
 # debug
@@ -29,6 +38,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
 
 # env files (can opt-in for committing if needed)
 .env*
@@ -38,4 +48,3 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
