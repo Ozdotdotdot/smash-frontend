@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #060910;
+  --foreground: #f5f7fb;
 }
 
 @theme inline {
@@ -20,7 +20,98 @@
 }
 
 body {
-  background: var(--background);
+  background: radial-gradient(circle at 20% 20%, #0f1626 0, #060910 45%, #02040b 100%);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.splash {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 30% 30%, #0d1424 0, #04070f 55%, #01030a 100%);
+  z-index: 50;
+  transition: opacity 600ms ease 120ms;
+}
+
+.splash__mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  font-size: clamp(32px, 5vw, 72px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  transition: transform 850ms cubic-bezier(0.77, 0, 0.175, 1),
+    left 850ms cubic-bezier(0.77, 0, 0.175, 1),
+    top 850ms cubic-bezier(0.77, 0, 0.175, 1),
+    letter-spacing 850ms cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.splash__mark--compact {
+  left: 72px;
+  top: 72px;
+  transform: translate(0, 0) scale(0.42);
+  letter-spacing: 0.32em;
+}
+
+.splash--compact {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.splash__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.08), transparent 55%);
+  filter: blur(50px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.splash--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.page-shell {
+  display: flex;
+  min-height: 100vh;
+  padding: 4rem clamp(1.5rem, 5vw, 3.5rem);
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 3rem;
+  flex-direction: column;
+  opacity: 0;
+  transition: opacity 500ms ease 100ms;
+  pointer-events: none;
+}
+
+.page-shell--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent);
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  padding: 0.45rem 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.card {
+  border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04));
+  border-radius: 18px;
+  padding: 1.4rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
 }

@@ -1,110 +1,127 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 
-type GridLoaderType = typeof import("react-spinners").GridLoader;
+type SplashPhase = "full" | "compact" | "hidden";
 
 export default function Home() {
-  const [isSplashVisible, setIsSplashVisible] = useState(true);
-  const [GridLoaderComponent, setGridLoaderComponent] =
-    useState<GridLoaderType | null>(null);
+  const [phase, setPhase] = useState<SplashPhase>("full");
+  const frames = ["smash.watch", "sash.wath", "shs.wth", "ss.wh", "s.w"];
+  const [frameIndex, setFrameIndex] = useState(0);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsSplashVisible(false), 875);
-    return () => clearTimeout(timer);
-  }, []);
+    const frameDuration = 140; // fast, snappy transitions
+    const interval = setInterval(() => {
+      setFrameIndex((idx) => {
+        if (idx >= frames.length - 1) {
+          clearInterval(interval);
+          return idx;
+        }
+        return idx + 1;
+      });
+    }, frameDuration);
 
-  useEffect(() => {
-    let isMounted = true;
-    import("react-spinners").then((mod) => {
-      if (isMounted) {
-        setGridLoaderComponent(() => mod.GridLoader);
-      }
-    });
+    const shrinkTimer = setTimeout(
+      () => setPhase("compact"),
+      frameDuration * frames.length + 140
+    );
+    const hideTimer = setTimeout(
+      () => setPhase("hidden"),
+      frameDuration * frames.length + 760
+    );
     return () => {
-      isMounted = false;
+      clearInterval(interval);
+      clearTimeout(shrinkTimer);
+      clearTimeout(hideTimer);
     };
   }, []);
 
-  if (!GridLoaderComponent) {
-    return null; // wait to render splash until loader is ready so text + spinner appear together
-  }
+  const mainVisible = phase === "hidden";
+  const markText = frames[frameIndex] ?? frames[0];
 
   return (
-    <div className="relative min-h-screen bg-background font-sans text-foreground">
+    <div className="relative min-h-screen bg-background text-foreground">
       <div
-        className={`fixed inset-0 flex flex-col items-center justify-center gap-4 bg-background transition-opacity duration-500 ${
-          isSplashVisible ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
+        className={[
+          "splash",
+          phase !== "full" ? "splash--compact" : "",
+          phase === "hidden" ? "splash--hidden" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
       >
-        <span className="text-3xl font-semibold tracking-tight">smash.watch</span>
-        <GridLoaderComponent color="currentColor" size={8}/>
+        <span
+          className={[
+            "splash__mark",
+            phase !== "full" ? "splash__mark--compact" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {markText}
+        </span>
+        <div className="splash__glow" />
       </div>
 
-      <div
-        className={`flex min-h-screen items-center justify-center transition-opacity duration-500 ${
-          isSplashVisible ? "opacity-0" : "opacity-100"
-        }`}
+      <main
+        className={`page-shell ${mainVisible ? "page-shell--visible" : ""}`}
+        aria-hidden={!mainVisible}
       >
-        <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between bg-background py-32 px-16 sm:items-start">
-          <Image
-            className="dark:invert"
-            src="/next.svg"
-            alt="Next.js logo"
-            width={100}
-            height={20}
-            priority
-          />
-          <div className="flex flex-col items-center gap-6 text-center text-foreground sm:items-start sm:text-left">
-            <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-foreground">
-              To get started, edit the page.tsx file.
+        <header className="flex w-full items-start justify-between gap-6">
+          <div className="space-y-4">
+            <p className="text-xs uppercase tracking-[0.4em] text-foreground/60">
+              Smash watch
+            </p>
+            <h1 className="max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
+              Tournament awareness that greets you before the bracket starts.
             </h1>
-            <p className="max-w-md text-lg leading-8 text-foreground/80">
-              Looking for a starting point or more instructions? Head over to{" "}
-              <a
-                href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-                className="font-medium text-foreground"
-              >
-                Templates
-              </a>{" "}
-              or the{" "}
-              <a
-                href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-                className="font-medium text-foreground"
-              >
-                Learning
-              </a>{" "}
-              center.
+            <p className="max-w-2xl text-lg text-foreground/75">
+              We monitor the start.gg firehose and surface precomputed insight for your
+              region&apos;s players and mains—no more scrubbing VODs to know who&apos;s a
+              threat.
+            </p>
+            <div className="flex flex-wrap gap-3 text-sm text-foreground/75">
+              <span className="pill">Instant precomputed metrics</span>
+              <span className="pill">Character heatmaps</span>
+              <span className="pill">State + major ready</span>
+            </div>
+          </div>
+          <div className="rounded-full border border-foreground/15 bg-foreground/5 px-4 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-foreground/75">
+            s.w
+          </div>
+        </header>
+
+        <section className="grid w-full gap-4 md:grid-cols-3">
+          <div className="card">
+            <p className="text-xs uppercase tracking-[0.28em] text-foreground/55">
+              Spotlight
+            </p>
+            <p className="mt-3 text-lg font-semibold">Georgia, last 6 months</p>
+            <p className="text-sm text-foreground/65">
+              Precomputed weighted win-rate + opponent strength, ready to display in your
+              dashboard of choice.
             </p>
           </div>
-          <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-            <a
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-              href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Image
-                className="dark:invert"
-                src="/vercel.svg"
-                alt="Vercel logomark"
-                width={16}
-                height={16}
-              />
-              Deploy Now
-            </a>
-            <a
-              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-              href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Documentation
-            </a>
+          <div className="card">
+            <p className="text-xs uppercase tracking-[0.28em] text-foreground/55">
+              Characters
+            </p>
+            <p className="mt-3 text-lg font-semibold">Marth, Sheik, Fox</p>
+            <p className="text-sm text-foreground/65">
+              Swap mains and the API will reshape the leaderboard and usage rates.
+            </p>
           </div>
-        </main>
-      </div>
+          <div className="card">
+            <p className="text-xs uppercase tracking-[0.28em] text-foreground/55">
+              Delivery
+            </p>
+            <p className="mt-3 text-lg font-semibold">API + visual layer</p>
+            <p className="text-sm text-foreground/65">
+              Pipe it into Altair/Matplotlib or your own UI; the splash is just the start.
+            </p>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

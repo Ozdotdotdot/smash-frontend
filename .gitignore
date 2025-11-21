@@ -2,6 +2,7 @@
 
 # resources
 /react-bits
+/tailwindcss
 
 # dependencies
 /node_modules
