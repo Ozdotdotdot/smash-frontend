@@ -11,7 +11,7 @@ export default function Home() {
     useState<GridLoaderType | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsSplashVisible(false), 700);
+    const timer = setTimeout(() => setIsSplashVisible(false), 875);
     return () => clearTimeout(timer);
   }, []);
 
@@ -39,7 +39,7 @@ export default function Home() {
         }`}
       >
         <span className="text-3xl font-semibold tracking-tight">smash.watch</span>
-        <GridLoaderComponent color="currentColor" />
+        <GridLoaderComponent color="currentColor" size={8}/>
       </div>
 
       <div
