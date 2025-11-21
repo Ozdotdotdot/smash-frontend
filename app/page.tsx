@@ -6,31 +6,38 @@ type SplashPhase = "full" | "compact" | "hidden";
 
 export default function Home() {
   const [phase, setPhase] = useState<SplashPhase>("full");
-  const frames = ["smash.watch", "sash.wath", "shs.wth", "ss.wh", "s.w"];
+  const frames = ["smash.watch", "sash.wath", "ssh.wth", "ss.wh", "s.w"];
   const [frameIndex, setFrameIndex] = useState(0);
 
   useEffect(() => {
-    const frameDuration = 140; // fast, snappy transitions
-    const interval = setInterval(() => {
-      setFrameIndex((idx) => {
-        if (idx >= frames.length - 1) {
-          clearInterval(interval);
-          return idx;
-        }
-        return idx + 1;
-      });
-    }, frameDuration);
+    const firstFrameDuration = 500; // linger a bit longer on the full name
+    const frameDuration = 140; // fast, snappy transitions for the rest
 
-    const shrinkTimer = setTimeout(
-      () => setPhase("compact"),
-      frameDuration * frames.length + 140
-    );
-    const hideTimer = setTimeout(
-      () => setPhase("hidden"),
-      frameDuration * frames.length + 760
-    );
+    let intervalRef: ReturnType<typeof setInterval> | null = null;
+
+    const startInterval = () =>
+      setInterval(() => {
+        setFrameIndex((idx) => {
+          if (idx >= frames.length - 1) {
+            if (intervalRef) clearInterval(intervalRef);
+            return idx;
+          }
+          return idx + 1;
+        });
+      }, frameDuration);
+
+    const initialDelay = setTimeout(() => {
+      setFrameIndex((idx) => Math.min(idx + 1, frames.length - 1)); // advance after first linger
+      intervalRef = startInterval();
+    }, firstFrameDuration);
+
+    const totalDuration =
+      firstFrameDuration + frameDuration * (frames.length - 1);
+    const shrinkTimer = setTimeout(() => setPhase("compact"), totalDuration + 140);
+    const hideTimer = setTimeout(() => setPhase("hidden"), totalDuration + 760);
     return () => {
-      clearInterval(interval);
+      if (intervalRef) clearInterval(intervalRef);
+      clearTimeout(initialDelay);
       clearTimeout(shrinkTimer);
       clearTimeout(hideTimer);
     };
@@ -67,11 +74,11 @@ export default function Home() {
         className={`page-shell ${mainVisible ? "page-shell--visible" : ""}`}
         aria-hidden={!mainVisible}
       >
-        <header className="flex w-full items-start justify-between gap-6">
+        <header className="flex w-full items-start gap-6">
           <div className="space-y-4">
-            <p className="text-xs uppercase tracking-[0.4em] text-foreground/60">
-              Smash watch
-            </p>
+            <div className="inline-flex items-center rounded-full border border-foreground/15 bg-foreground/5 px-4 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-foreground/75">
+              s.w
+            </div>
             <h1 className="max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
               Tournament awareness that greets you before the bracket starts.
             </h1>
@@ -85,9 +92,6 @@ export default function Home() {
               <span className="pill">Character heatmaps</span>
               <span className="pill">State + major ready</span>
             </div>
-          </div>
-          <div className="rounded-full border border-foreground/15 bg-foreground/5 px-4 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-foreground/75">
-            s.w
           </div>
         </header>
 
