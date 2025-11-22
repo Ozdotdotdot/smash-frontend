@@ -78,31 +78,33 @@ export default function Home() {
           <div className="text-sm font-semibold uppercase tracking-[0.3em] text-white">
             s.w
           </div>
-          <div className="space-y-4">
-            <h1 className="max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
-              See who&apos;s actually good in your region.
-            </h1>
-            <p className="max-w-2xl text-lg text-foreground/75">
-              Smash Watch pulls months of start.gg brackets for every US state and surfaces
-              player-level metrics like weighted win rate and opponent strength—so you
-              can spot the real threats before top 8.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <a className="btn" href="#visualization">
-                View example dashboard
-              </a>
-              <a
-                className="btn btn--ghost"
-                href="https://github.com/ozdotdotdot/smashDA"
-                target="_blank"
-                rel="noreferrer"
-              >
-                View on GitHub
-              </a>
+          <div className="hero-banner">
+            <div className="hero-inner space-y-4">
+              <h1 className="max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
+                See who&apos;s actually good in your region.
+              </h1>
+              <p className="max-w-2xl text-lg text-foreground/75">
+                SmashDA pulls months of start.gg brackets for every US state and surfaces
+                player-level metrics like weighted win rate and opponent strength—so you
+                can spot the real threats before top 8.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <a className="btn" href="#visualization">
+                  View example dashboard
+                </a>
+                <a
+                  className="btn btn--ghost"
+                  href="https://github.com/ozdotdotdot/smashDA"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View on GitHub
+                </a>
+              </div>
+              <p className="text-xs uppercase tracking-[0.2em] text-foreground/55">
+                v0.1 – precomputed US state data (~3 months) via API and notebooks.
+              </p>
             </div>
-            <p className="text-xs uppercase tracking-[0.2em] text-foreground/55">
-              v0.1 – precomputed US state data (~3 months) via API and notebooks.
-            </p>
           </div>
         </header>
 
