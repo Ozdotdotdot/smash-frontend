@@ -127,9 +127,25 @@ body {
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
   background: #000;
+  position: relative;
+  overflow: hidden;
   border-radius: 0;
   border: none;
   box-shadow: none;
+}
+
+.hero-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/marth-ascii.png");
+  background-repeat: no-repeat;
+  background-position: calc(100% + 200px) -4%;
+  background-size: auto 250%; /* zoom in so lower portion is cropped */
+  mix-blend-mode: screen;
+  filter: invert(1);
+  opacity: 0.40;
+  pointer-events: none;
 }
 
 .hero-inner {
