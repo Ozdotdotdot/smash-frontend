@@ -6,12 +6,12 @@ type SplashPhase = "full" | "compact" | "hidden";
 
 export default function Home() {
   const [phase, setPhase] = useState<SplashPhase>("full");
-  const frames = ["smash.watch", "sash.wath", "ssh.wth", "ss.wh", "s.w"];
+  const frames = ["smash.watch", "smas.wtch", "sma.wch", "ss.wh", "s.w"];
   const [frameIndex, setFrameIndex] = useState(0);
 
   useEffect(() => {
     const firstFrameDuration = 1000; // linger a bit longer on the full name
-    const frameDuration = 140; // fast, snappy transitions for the rest
+    const frameDuration = 85; // fast, snappy transitions for the rest
 
     let intervalRef: ReturnType<typeof setInterval> | null = null;
 
@@ -75,7 +75,7 @@ export default function Home() {
         aria-hidden={!mainVisible}
       >
         <header className="flex w-full flex-col gap-6">
-          <div className="text-sm font-semibold uppercase tracking-[0.3em] text-white">
+          <div className="text-base font-semibold uppercase tracking-[0.3em] text-white">
             s.w
           </div>
           <div className="hero-banner">
