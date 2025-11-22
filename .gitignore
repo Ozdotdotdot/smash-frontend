@@ -3,6 +3,7 @@
 # resources
 /react-bits
 /tailwindcss
+/smashDA
 
 # dependencies
 /node_modules
