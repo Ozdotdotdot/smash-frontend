@@ -1,17 +1,64 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  CartesianGrid,
+  ResponsiveContainer,
+  Scatter,
+  ScatterChart,
+  Tooltip,
+  TooltipProps,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 type SplashPhase = "full" | "compact" | "hidden";
 
+type PlayerPoint = {
+  player_id?: number;
+  gamer_tag: string;
+  weighted_win_rate: number;
+  opponent_strength: number;
+  home_state?: string;
+};
+
+function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
+  if (!active || !payload?.length) return null;
+  const row = payload[0]?.payload as PlayerPoint | undefined;
+  if (!row) return null;
+  const winRate = `${Math.round((row.weighted_win_rate ?? 0) * 100)}%`;
+  const strength =
+    row.opponent_strength !== undefined
+      ? Number(row.opponent_strength.toFixed(3))
+      : "—";
+
+  return (
+    <div className="chart-tooltip">
+      <div className="chart-tooltip__name">{row.gamer_tag ?? "Unknown"}</div>
+      <div className="chart-tooltip__line">
+        <span>Win rate</span>
+        <span>{winRate}</span>
+      </div>
+      <div className="chart-tooltip__line">
+        <span>Opp strength</span>
+        <span>{strength}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [phase, setPhase] = useState<SplashPhase>("full");
-  const frames = ["smash.watch", "sash.wath", "ssh.wth", "ss.wh", "s.w"];
+  const frames = ["smash.watch", "smas.wtch", "sma.wch", "ss.wh", "s.w"];
   const [frameIndex, setFrameIndex] = useState(0);
+  const [selectedState, setSelectedState] = useState("GA");
+  const [players, setPlayers] = useState<PlayerPoint[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const firstFrameDuration = 500; // linger a bit longer on the full name
-    const frameDuration = 140; // fast, snappy transitions for the rest
+    const firstFrameDuration = 1100; // linger a bit longer on the full name
+    const frameDuration = 140; // quick collapse progression
 
     let intervalRef: ReturnType<typeof setInterval> | null = null;
 
@@ -33,8 +80,8 @@ export default function Home() {
 
     const totalDuration =
       firstFrameDuration + frameDuration * (frames.length - 1);
-    const shrinkTimer = setTimeout(() => setPhase("compact"), totalDuration + 140);
-    const hideTimer = setTimeout(() => setPhase("hidden"), totalDuration + 760);
+    const shrinkTimer = setTimeout(() => setPhase("compact"), totalDuration + 120);
+    const hideTimer = setTimeout(() => setPhase("hidden"), totalDuration + 700); // fade out after collapse
     return () => {
       if (intervalRef) clearInterval(intervalRef);
       clearTimeout(initialDelay);
@@ -45,6 +92,33 @@ export default function Home() {
 
   const mainVisible = phase === "hidden";
   const markText = frames[frameIndex] ?? frames[0];
+  const apiUrl = useMemo(
+    () =>
+      `/api/precomputed?state=${selectedState}&months_back=3&limit=0&filter_state=${selectedState}`,
+    [selectedState],
+  );
+
+  useEffect(() => {
+    if (!mainVisible) return; // delay data fetch until after splash finishes
+    const controller = new AbortController();
+    setIsLoading(true);
+    setError(null);
+    fetch(apiUrl, { signal: controller.signal })
+      .then((res) => {
+        if (!res.ok) throw new Error(`API error ${res.status}`);
+        return res.json();
+      })
+      .then((json: { results?: PlayerPoint[] }) => {
+        setPlayers((json.results ?? []) as PlayerPoint[]);
+      })
+      .catch((err) => {
+        if ((err as Error).name === "AbortError") return;
+        setError((err as Error).message);
+      })
+      .finally(() => setIsLoading(false));
+
+    return () => controller.abort();
+  }, [apiUrl, mainVisible]);
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
@@ -75,54 +149,36 @@ export default function Home() {
         aria-hidden={!mainVisible}
       >
         <header className="flex w-full flex-col gap-6">
-          <div className="text-sm font-semibold uppercase tracking-[0.3em] text-white">
+          <div className="text-base font-semibold uppercase tracking-[0.3em] text-white">
             s.w
           </div>
-          <div className="space-y-4">
-            <h1 className="max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
-              See who&apos;s actually good in your region.
-            </h1>
-            <p className="max-w-2xl text-lg text-foreground/75">
-              SmashDA pulls months of start.gg brackets for every US state and surfaces
-              player-level metrics like weighted win rate and opponent strength—so you
-              can spot the real threats before top 8.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <a className="btn" href="#visualization">
-                View example dashboard
-              </a>
-              <a
-                className="btn btn--ghost"
-                href="https://github.com/ozdotdotdot/smashDA"
-                target="_blank"
-                rel="noreferrer"
-              >
-                View on GitHub
-              </a>
+          <div className="hero-banner">
+            <div className="hero-inner space-y-4">
+              <h1 className="max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
+                See who&apos;s actually good in your region.
+              </h1>
+              <p className="max-w-2xl text-lg text-foreground/75">
+                Smash Watch crunches local bracket data to reveal who’s overperforming, who’s consistent, and who you should be watching out for.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <a className="btn" href="#visualization">
+                  View example dashboard
+                </a>
+                <a
+                  className="btn btn--ghost"
+                  href="https://github.com/ozdotdotdot/smashDA"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View on GitHub
+                </a>
+              </div>
+              <p className="text-xs uppercase tracking-[0.2em] text-foreground/55">
+                v0.1 – precomputed US state data (~3 months) via API and notebooks.
+              </p>
             </div>
-            <p className="text-xs uppercase tracking-[0.2em] text-foreground/55">
-              v0.1 – precomputed US state data (~3 months) via API and notebooks.
-            </p>
           </div>
         </header>
-
-        <section className="section">
-          <h2 className="section__title">What you get today</h2>
-          <div className="section__grid">
-            <div className="section__item">
-              <h3>Regional scope</h3>
-              <p>Discover players across US states using start.gg tournament data.</p>
-            </div>
-            <div className="section__item">
-              <h3>Precomputed metrics</h3>
-              <p>Weighted win rate, opponent strength, and activity—ready to plot.</p>
-            </div>
-            <div className="section__item">
-              <h3>API-first</h3>
-              <p>FastAPI serves trimmed JSON you can use in notebooks or your own UI.</p>
-            </div>
-          </div>
-        </section>
 
         <section id="visualization" className="section section--split">
           <div className="section__copy">
@@ -135,37 +191,75 @@ export default function Home() {
             <p className="text-sm text-foreground/65">
               Roadmap: browser-native dashboard, character filters, and per-region presets.
             </p>
+            <div className="flex flex-wrap gap-2 pt-3">
+              {["GA", "TX", "CA", "NY"].map((state) => (
+                <button
+                  key={state}
+                  className={`state-pill ${state === selectedState ? "state-pill--active" : ""}`}
+                  onClick={() => setSelectedState(state)}
+                  type="button"
+                >
+                  {state}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-foreground/50">
+              Data via precomputed API (last 3 months). Win rate vs opponent strength.
+            </p>
           </div>
-          <div className="mock-chart" aria-hidden="true">
-            <div className="mock-chart__header">
-              <span className="mock-pill">GA · last 3 months</span>
+          <div className="chart-card">
+            <div className="chart-card__header">
+              <span className="mock-pill">
+                {selectedState} · last 3 months · {players.length} players
+              </span>
               <span className="mock-pill mock-pill--ghost">Weighted win rate vs strength</span>
             </div>
-            <div className="mock-chart__body">
-              <div className="mock-dot mock-dot--a" />
-              <div className="mock-dot mock-dot--b" />
-              <div className="mock-dot mock-dot--c" />
-              <div className="mock-dot mock-dot--d" />
+            <div className="chart-card__body">
+              <ResponsiveContainer width="100%" height={420}>
+                <ScatterChart margin={{ top: 24, right: 16, bottom: 24, left: 16 }}>
+                  <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="4 6" />
+                  <XAxis
+                    type="number"
+                    dataKey="weighted_win_rate"
+                    name="Weighted win rate"
+                    domain={[0, 1]}
+                    tickFormatter={(v) => `${Math.round(v * 100)}%`}
+                    stroke="rgba(255,255,255,0.55)"
+                    tickLine={false}
+                  />
+                  <YAxis
+                    type="number"
+                    dataKey="opponent_strength"
+                    name="Opponent strength"
+                    domain={[0, "auto"]}
+                    stroke="rgba(255,255,255,0.55)"
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
+                    content={<ChartTooltip />}
+                    wrapperStyle={{ transition: "none" }}
+                    animationDuration={0}
+                  />
+                  <Scatter
+                    data={players}
+                    fill="#4ade80"
+                    fillOpacity={0.95}
+                    stroke="rgba(0,0,0,0.35)"
+                    strokeWidth={0.6}
+                    isAnimationActive={false}
+                  />
+                </ScatterChart>
+              </ResponsiveContainer>
+              {isLoading ? (
+                <p className="chart-status">Loading data…</p>
+              ) : error ? (
+                <p className="chart-status chart-status--error">Error: {error}</p>
+              ) : players.length === 0 ? (
+                <p className="chart-status">No players for this state.</p>
+              ) : null}
             </div>
           </div>
-        </section>
-
-        <section className="section">
-          <h2 className="section__title">How it works</h2>
-          <ol className="steps">
-            <li>
-              <strong>Sync brackets from start.gg</strong>
-              <span>CLI pulls tournaments for a state + game and caches them in SQLite.</span>
-            </li>
-            <li>
-              <strong>Precompute player metrics</strong>
-              <span>Offline job computes weighted win rates, upset rates, activity, and more.</span>
-            </li>
-            <li>
-              <strong>Serve via API</strong>
-              <span>FastAPI exposes /precomputed and /search for your notebook or UI.</span>
-            </li>
-          </ol>
         </section>
 
         <footer className="footer">

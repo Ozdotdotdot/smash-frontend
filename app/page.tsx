@@ -1,13 +1,60 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  CartesianGrid,
+  ResponsiveContainer,
+  Scatter,
+  ScatterChart,
+  Tooltip,
+  TooltipProps,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 type SplashPhase = "full" | "compact" | "hidden";
+
+type PlayerPoint = {
+  player_id?: number;
+  gamer_tag: string;
+  weighted_win_rate: number;
+  opponent_strength: number;
+  home_state?: string;
+};
+
+function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
+  if (!active || !payload?.length) return null;
+  const row = payload[0]?.payload as PlayerPoint | undefined;
+  if (!row) return null;
+  const winRate = `${Math.round((row.weighted_win_rate ?? 0) * 100)}%`;
+  const strength =
+    row.opponent_strength !== undefined
+      ? Number(row.opponent_strength.toFixed(3))
+      : "—";
+
+  return (
+    <div className="chart-tooltip">
+      <div className="chart-tooltip__name">{row.gamer_tag ?? "Unknown"}</div>
+      <div className="chart-tooltip__line">
+        <span>Win rate</span>
+        <span>{winRate}</span>
+      </div>
+      <div className="chart-tooltip__line">
+        <span>Opp strength</span>
+        <span>{strength}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const [phase, setPhase] = useState<SplashPhase>("full");
   const frames = ["smash.watch", "smas.wtch", "sma.wch", "ss.wh", "s.w"];
   const [frameIndex, setFrameIndex] = useState(0);
+  const [selectedState, setSelectedState] = useState("GA");
+  const [players, setPlayers] = useState<PlayerPoint[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const firstFrameDuration = 1100; // linger a bit longer on the full name
@@ -45,6 +92,33 @@ export default function Home() {
 
   const mainVisible = phase === "hidden";
   const markText = frames[frameIndex] ?? frames[0];
+  const apiUrl = useMemo(
+    () =>
+      `/api/precomputed?state=${selectedState}&months_back=3&limit=0&filter_state=${selectedState}`,
+    [selectedState],
+  );
+
+  useEffect(() => {
+    if (!mainVisible) return; // delay data fetch until after splash finishes
+    const controller = new AbortController();
+    setIsLoading(true);
+    setError(null);
+    fetch(apiUrl, { signal: controller.signal })
+      .then((res) => {
+        if (!res.ok) throw new Error(`API error ${res.status}`);
+        return res.json();
+      })
+      .then((json: { results?: PlayerPoint[] }) => {
+        setPlayers((json.results ?? []) as PlayerPoint[]);
+      })
+      .catch((err) => {
+        if ((err as Error).name === "AbortError") return;
+        setError((err as Error).message);
+      })
+      .finally(() => setIsLoading(false));
+
+    return () => controller.abort();
+  }, [apiUrl, mainVisible]);
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
@@ -117,17 +191,73 @@ export default function Home() {
             <p className="text-sm text-foreground/65">
               Roadmap: browser-native dashboard, character filters, and per-region presets.
             </p>
+            <div className="flex flex-wrap gap-2 pt-3">
+              {["GA", "TX", "CA", "NY"].map((state) => (
+                <button
+                  key={state}
+                  className={`state-pill ${state === selectedState ? "state-pill--active" : ""}`}
+                  onClick={() => setSelectedState(state)}
+                  type="button"
+                >
+                  {state}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-foreground/50">
+              Data via precomputed API (last 3 months). Win rate vs opponent strength.
+            </p>
           </div>
-          <div className="mock-chart" aria-hidden="true">
-            <div className="mock-chart__header">
-              <span className="mock-pill">GA · last 3 months</span>
+          <div className="chart-card">
+            <div className="chart-card__header">
+              <span className="mock-pill">
+                {selectedState} · last 3 months · {players.length} players
+              </span>
               <span className="mock-pill mock-pill--ghost">Weighted win rate vs strength</span>
             </div>
-            <div className="mock-chart__body">
-              <div className="mock-dot mock-dot--a" />
-              <div className="mock-dot mock-dot--b" />
-              <div className="mock-dot mock-dot--c" />
-              <div className="mock-dot mock-dot--d" />
+            <div className="chart-card__body">
+              <ResponsiveContainer width="100%" height={420}>
+                <ScatterChart margin={{ top: 24, right: 16, bottom: 24, left: 16 }}>
+                  <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="4 6" />
+                  <XAxis
+                    type="number"
+                    dataKey="weighted_win_rate"
+                    name="Weighted win rate"
+                    domain={[0, 1]}
+                    tickFormatter={(v) => `${Math.round(v * 100)}%`}
+                    stroke="rgba(255,255,255,0.55)"
+                    tickLine={false}
+                  />
+                  <YAxis
+                    type="number"
+                    dataKey="opponent_strength"
+                    name="Opponent strength"
+                    domain={[0, "auto"]}
+                    stroke="rgba(255,255,255,0.55)"
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
+                    content={<ChartTooltip />}
+                    wrapperStyle={{ transition: "none" }}
+                    animationDuration={0}
+                  />
+                  <Scatter
+                    data={players}
+                    fill="#4ade80"
+                    fillOpacity={0.95}
+                    stroke="rgba(0,0,0,0.35)"
+                    strokeWidth={0.6}
+                    isAnimationActive={false}
+                  />
+                </ScatterChart>
+              </ResponsiveContainer>
+              {isLoading ? (
+                <p className="chart-status">Loading data…</p>
+              ) : error ? (
+                <p className="chart-status chart-status--error">Error: {error}</p>
+              ) : players.length === 0 ? (
+                <p className="chart-status">No players for this state.</p>
+              ) : null}
             </div>
           </div>
         </section>
