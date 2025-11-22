@@ -10,7 +10,7 @@ export default function Home() {
   const [frameIndex, setFrameIndex] = useState(0);
 
   useEffect(() => {
-    const firstFrameDuration = 500; // linger a bit longer on the full name
+    const firstFrameDuration = 1000; // linger a bit longer on the full name
     const frameDuration = 140; // fast, snappy transitions for the rest
 
     let intervalRef: ReturnType<typeof setInterval> | null = null;
@@ -84,9 +84,7 @@ export default function Home() {
                 See who&apos;s actually good in your region.
               </h1>
               <p className="max-w-2xl text-lg text-foreground/75">
-                SmashDA pulls months of start.gg brackets for every US state and surfaces
-                player-level metrics like weighted win rate and opponent strength—so you
-                can spot the real threats before top 8.
+                Smash Watch crunches local bracket data to reveal who’s overperforming, who’s consistent, and who you should be watching out for.
               </p>
               <div className="flex flex-wrap gap-3">
                 <a className="btn" href="#visualization">
