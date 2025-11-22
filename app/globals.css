@@ -41,7 +41,7 @@ body {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%) scale(1);
-  font-size: clamp(32px, 5vw, 72px);
+  font-size: clamp(52px, 5vw, 72px);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: lowercase;
