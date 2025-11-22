@@ -83,7 +83,7 @@ export default function Home() {
               See who&apos;s actually good in your region.
             </h1>
             <p className="max-w-2xl text-lg text-foreground/75">
-              SmashDA pulls months of start.gg brackets for every US state and surfaces
+              Smash Watch pulls months of start.gg brackets for every US state and surfaces
               player-level metrics like weighted win rate and opponent strength—so you
               can spot the real threats before top 8.
             </p>
