@@ -140,12 +140,20 @@ body {
   inset: 0;
   background-image: url("/marth-ascii.png");
   background-repeat: no-repeat;
-  background-position: calc(100% + 200px) -4%;
-  background-size: auto 250%; /* zoom in so lower portion is cropped */
+  background-position: calc(50% + 300px) -4%; /* align to the right edge of the text column */
+  background-size: auto 220%; /* zoom in so lower portion is cropped */
   mix-blend-mode: screen;
   filter: invert(1);
-  opacity: 0.40;
+  opacity: 0.45;
   pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .hero-banner::before {
+    background-position: 25% -5%; /* pull back toward the text on narrow screens */
+    background-size: auto 220%; /* show more of the figure on mobile */
+    opacity: 0.5;
+  }
 }
 
 .hero-inner {
