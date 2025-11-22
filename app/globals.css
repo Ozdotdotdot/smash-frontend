@@ -107,11 +107,183 @@ body {
   letter-spacing: 0.16em;
 }
 
-.card {
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.1rem;
+  border-radius: 999px;
+  background: #2f6bff;
+  color: white;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+  box-shadow: 0 10px 30px rgba(47, 107, 255, 0.25);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 34px rgba(47, 107, 255, 0.32);
+  background: #2a61e8;
+}
+
+.btn--ghost {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--foreground) 15%, transparent);
+  color: var(--foreground);
+  box-shadow: none;
+}
+
+.btn--ghost:hover {
+  border-color: color-mix(in srgb, var(--foreground) 35%, transparent);
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+.section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+.section__title {
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: color-mix(in srgb, var(--foreground) 70%, transparent);
+}
+
+.section__grid {
+  display: grid;
+  gap: 1.2rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.section__item {
+  padding: 1.1rem;
   border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04));
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.03));
+}
+
+.section__item h3 {
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.section__item p {
+  color: color-mix(in srgb, var(--foreground) 78%, transparent);
+}
+
+.section--split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.6rem;
+}
+
+@media (min-width: 900px) {
+  .section--split {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+  }
+}
+
+.section__copy p {
+  color: color-mix(in srgb, var(--foreground) 78%, transparent);
+}
+
+.mock-chart {
   border-radius: 18px;
-  padding: 1.4rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(8px);
+  padding: 1.2rem;
+  border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.06));
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.mock-chart__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mock-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--foreground) 12%, transparent);
+  color: var(--foreground);
+  font-size: 0.85rem;
+}
+
+.mock-pill--ghost {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--foreground) 25%, transparent);
+}
+
+.mock-chart__body {
+  flex: 1;
+  position: relative;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.08), transparent 60%);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.mock-dot {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 6px 18px rgba(74, 222, 128, 0.35);
+}
+
+.mock-dot--a { top: 32%; left: 24%; }
+.mock-dot--b { top: 48%; left: 62%; background: #60a5fa; box-shadow: 0 6px 18px rgba(96, 165, 250, 0.35); }
+.mock-dot--c { top: 72%; left: 38%; background: #f472b6; box-shadow: 0 6px 18px rgba(244, 114, 182, 0.35); }
+.mock-dot--d { top: 20%; left: 78%; background: #facc15; box-shadow: 0 6px 18px rgba(250, 204, 21, 0.35); }
+
+.steps {
+  list-style: none;
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+}
+
+.steps li {
+  border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+  border-radius: 14px;
+  padding: 0.95rem 1.1rem;
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.035));
+  display: grid;
+  gap: 0.35rem;
+}
+
+.steps strong {
+  font-weight: 700;
+}
+
+.steps span {
+  color: color-mix(in srgb, var(--foreground) 75%, transparent);
+}
+
+.footer {
+  width: 100%;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+  display: grid;
+  gap: 0.6rem;
+}
+
+.footer__links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
 }

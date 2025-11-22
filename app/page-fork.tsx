@@ -74,57 +74,117 @@ export default function Home() {
         className={`page-shell ${mainVisible ? "page-shell--visible" : ""}`}
         aria-hidden={!mainVisible}
       >
-        <header className="flex w-full items-start gap-6">
+        <header className="flex w-full flex-col gap-6">
+          <div className="text-sm font-semibold uppercase tracking-[0.3em] text-white">
+            s.w
+          </div>
           <div className="space-y-4">
-            <div className="text-sm font-semibold uppercase tracking-[0.3em] text-white">
-              s.w
-            </div>
             <h1 className="max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
-              Tournament awareness that greets you before the bracket starts.
+              See who&apos;s actually good in your region.
             </h1>
             <p className="max-w-2xl text-lg text-foreground/75">
-              We monitor the start.gg firehose and surface precomputed insight for your
-              region&apos;s players and mains—no more scrubbing VODs to know who&apos;s a
-              threat.
+              SmashDA pulls months of start.gg brackets for every US state and surfaces
+              player-level metrics like weighted win rate and opponent strength—so you
+              can spot the real threats before top 8.
             </p>
-            <div className="flex flex-wrap gap-3 text-sm text-foreground/75">
-              <span className="pill">Instant precomputed metrics</span>
-              <span className="pill">Character heatmaps</span>
-              <span className="pill">State + major ready</span>
+            <div className="flex flex-wrap gap-3">
+              <a className="btn" href="#visualization">
+                View example dashboard
+              </a>
+              <a
+                className="btn btn--ghost"
+                href="https://github.com/ozdotdotdot/smashDA"
+                target="_blank"
+                rel="noreferrer"
+              >
+                View on GitHub
+              </a>
             </div>
+            <p className="text-xs uppercase tracking-[0.2em] text-foreground/55">
+              v0.1 – precomputed US state data (~3 months) via API and notebooks.
+            </p>
           </div>
         </header>
 
-        <section className="grid w-full gap-4 md:grid-cols-3">
-          <div className="card">
-            <p className="text-xs uppercase tracking-[0.28em] text-foreground/55">
-              Spotlight
-            </p>
-            <p className="mt-3 text-lg font-semibold">Georgia, last 6 months</p>
-            <p className="text-sm text-foreground/65">
-              Precomputed weighted win-rate + opponent strength, ready to display in your
-              dashboard of choice.
-            </p>
-          </div>
-          <div className="card">
-            <p className="text-xs uppercase tracking-[0.28em] text-foreground/55">
-              Characters
-            </p>
-            <p className="mt-3 text-lg font-semibold">Marth, Sheik, Fox</p>
-            <p className="text-sm text-foreground/65">
-              Swap mains and the API will reshape the leaderboard and usage rates.
-            </p>
-          </div>
-          <div className="card">
-            <p className="text-xs uppercase tracking-[0.28em] text-foreground/55">
-              Delivery
-            </p>
-            <p className="mt-3 text-lg font-semibold">API + visual layer</p>
-            <p className="text-sm text-foreground/65">
-              Pipe it into Altair/Matplotlib or your own UI; the splash is just the start.
-            </p>
+        <section className="section">
+          <h2 className="section__title">What you get today</h2>
+          <div className="section__grid">
+            <div className="section__item">
+              <h3>Regional scope</h3>
+              <p>Discover players across US states using start.gg tournament data.</p>
+            </div>
+            <div className="section__item">
+              <h3>Precomputed metrics</h3>
+              <p>Weighted win rate, opponent strength, and activity—ready to plot.</p>
+            </div>
+            <div className="section__item">
+              <h3>API-first</h3>
+              <p>FastAPI serves trimmed JSON you can use in notebooks or your own UI.</p>
+            </div>
           </div>
         </section>
+
+        <section id="visualization" className="section section--split">
+          <div className="section__copy">
+            <h2 className="section__title">A single scatter plot that tells the story</h2>
+            <p>
+              Each point is a player from your chosen state, positioned by weighted win rate
+              and opponent strength. Filtered via API; rendered in Altair / Jupyter today,
+              with a browser dashboard on the way.
+            </p>
+            <p className="text-sm text-foreground/65">
+              Roadmap: browser-native dashboard, character filters, and per-region presets.
+            </p>
+          </div>
+          <div className="mock-chart" aria-hidden="true">
+            <div className="mock-chart__header">
+              <span className="mock-pill">GA · last 3 months</span>
+              <span className="mock-pill mock-pill--ghost">Weighted win rate vs strength</span>
+            </div>
+            <div className="mock-chart__body">
+              <div className="mock-dot mock-dot--a" />
+              <div className="mock-dot mock-dot--b" />
+              <div className="mock-dot mock-dot--c" />
+              <div className="mock-dot mock-dot--d" />
+            </div>
+          </div>
+        </section>
+
+        <section className="section">
+          <h2 className="section__title">How it works</h2>
+          <ol className="steps">
+            <li>
+              <strong>Sync brackets from start.gg</strong>
+              <span>CLI pulls tournaments for a state + game and caches them in SQLite.</span>
+            </li>
+            <li>
+              <strong>Precompute player metrics</strong>
+              <span>Offline job computes weighted win rates, upset rates, activity, and more.</span>
+            </li>
+            <li>
+              <strong>Serve via API</strong>
+              <span>FastAPI exposes /precomputed and /search for your notebook or UI.</span>
+            </li>
+          </ol>
+        </section>
+
+        <footer className="footer">
+          <div className="text-sm font-semibold uppercase tracking-[0.3em] text-foreground/80">
+            s.w
+          </div>
+          <div className="footer__links">
+            <a href="https://github.com/ozdotdotdot/smashDA" target="_blank" rel="noreferrer">
+              GitHub
+            </a>
+            <a href="https://twitter.com" target="_blank" rel="noreferrer">
+              Twitter/X
+            </a>
+            <a href="mailto:hello@smash.watch">Email</a>
+          </div>
+          <p className="text-xs text-foreground/55">
+            Personal project by Ozair Khan. Not affiliated with Nintendo or start.gg.
+          </p>
+        </footer>
       </main>
     </div>
   );
