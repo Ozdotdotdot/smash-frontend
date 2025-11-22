@@ -45,6 +45,8 @@ body {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: lowercase;
+  opacity: 0;
+  animation: splashMarkFadeIn 700ms ease forwards 80ms;
   transition: transform 850ms cubic-bezier(0.77, 0, 0.175, 1),
     left 850ms cubic-bezier(0.77, 0, 0.175, 1),
     top 850ms cubic-bezier(0.77, 0, 0.175, 1),
@@ -61,6 +63,17 @@ body {
 .splash--compact {
   justify-content: flex-start;
   align-items: flex-start;
+}
+
+@keyframes splashMarkFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 .splash__glow {
