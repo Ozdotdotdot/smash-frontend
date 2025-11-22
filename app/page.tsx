@@ -10,7 +10,7 @@ export default function Home() {
   const [frameIndex, setFrameIndex] = useState(0);
 
   useEffect(() => {
-    const firstFrameDuration = 850; // linger a bit longer on the full name
+    const firstFrameDuration = 1100; // linger a bit longer on the full name
     const frameDuration = 140; // quick collapse progression
 
     let intervalRef: ReturnType<typeof setInterval> | null = null;
@@ -33,10 +33,12 @@ export default function Home() {
 
     const totalDuration =
       firstFrameDuration + frameDuration * (frames.length - 1);
+    const shrinkTimer = setTimeout(() => setPhase("compact"), totalDuration + 120);
     const hideTimer = setTimeout(() => setPhase("hidden"), totalDuration + 700); // fade out after collapse
     return () => {
       if (intervalRef) clearInterval(intervalRef);
       clearTimeout(initialDelay);
+      clearTimeout(shrinkTimer);
       clearTimeout(hideTimer);
     };
   }, []);
@@ -49,6 +51,7 @@ export default function Home() {
       <div
         className={[
           "splash",
+          phase !== "full" ? "splash--compact" : "",
           phase === "hidden" ? "splash--hidden" : "",
         ]
           .filter(Boolean)
@@ -57,6 +60,7 @@ export default function Home() {
         <span
           className={[
             "splash__mark",
+            phase !== "full" ? "splash__mark--compact" : "",
           ]
             .filter(Boolean)
             .join(" ")}
