@@ -220,18 +220,18 @@ export default function Home() {
                   <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="4 6" />
                   <XAxis
                     type="number"
-                    dataKey="weighted_win_rate"
-                    name="Weighted win rate"
-                    domain={[0, 1]}
-                    tickFormatter={(v) => `${Math.round(v * 100)}%`}
+                    dataKey="opponent_strength"
+                    name="Opponent strength"
+                    domain={[0, "auto"]}
                     stroke="rgba(255,255,255,0.55)"
                     tickLine={false}
                   />
                   <YAxis
                     type="number"
-                    dataKey="opponent_strength"
-                    name="Opponent strength"
-                    domain={[0, "auto"]}
+                    dataKey="weighted_win_rate"
+                    name="Weighted win rate"
+                    domain={[0, 1]}
+                    tickFormatter={(v) => `${Math.round((v as number) * 100)}%`}
                     stroke="rgba(255,255,255,0.55)"
                     tickLine={false}
                   />
