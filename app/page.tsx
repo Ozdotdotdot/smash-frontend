@@ -29,6 +29,12 @@ type PlayerPoint = {
   home_state?: string;
 };
 
+type FilteredData = {
+  filtered: PlayerPoint[];
+  hidden: number;
+  upperBound?: number;
+};
+
 function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const row = payload[0]?.payload as PlayerPoint | undefined;
@@ -60,9 +66,9 @@ export default function Home() {
   const [frameIndex, setFrameIndex] = useState(0);
   const dataSources: DataSource[] = [
     {
-      id: "ga-default",
-      label: "GA",
-      api: `/api/precomputed?state=GA&months_back=3&limit=0&filter_state=GA`,
+      id: "port-priority-9",
+      label: "Port Priority 9",
+      api: `/api/precomputed_series?state=WA&months_back=3&limit=0&series_key=port-priority-9`,
     },
     {
       id: "ga-4o4",
@@ -70,13 +76,14 @@ export default function Home() {
       api: `/api/precomputed_series?state=GA&months_back=3&limit=0&tournament_contains=4o4`,
     },
     {
-      id: "port-priority-9",
-      label: "Port Priority 9",
-      api: `/api/precomputed_series?state=WA&months_back=3&limit=0&series_key=port-priority-9`,
+      id: "ga-default",
+      label: "GA sample",
+      api: `/api/precomputed?state=GA&months_back=3&limit=0&filter_state=GA`,
     },
   ];
-  const [selectedSourceId, setSelectedSourceId] = useState(dataSources[0]?.id ?? "ga-default");
+  const [selectedSourceId, setSelectedSourceId] = useState(dataSources[0]?.id ?? "port-priority-9");
   const [players, setPlayers] = useState<PlayerPoint[]>([]);
+  const [hideOutliers, setHideOutliers] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const selectedSource = dataSources.find((src) => src.id === selectedSourceId) ?? dataSources[0];
@@ -118,6 +125,41 @@ export default function Home() {
   const mainVisible = phase === "hidden";
   const markText = frames[frameIndex] ?? frames[0];
   const apiUrl = useMemo(() => selectedSource.api, [selectedSource]);
+  const filteredData: FilteredData = useMemo(() => {
+    if (!hideOutliers) return { filtered: players, hidden: 0 };
+    if (players.length < 6) return { filtered: players, hidden: 0 };
+
+    const strengths = players
+      .map((p) => p.opponent_strength ?? 0)
+      .filter((v) => Number.isFinite(v))
+      .sort((a, b) => a - b);
+    if (!strengths.length) return { filtered: players, hidden: 0 };
+
+    const percentile = (arr: number[], p: number) => {
+      const idx = (arr.length - 1) * p;
+      const lower = Math.floor(idx);
+      const upper = Math.ceil(idx);
+      if (lower === upper) return arr[lower];
+      return arr[lower] + (arr[upper] - arr[lower]) * (idx - lower);
+    };
+
+    // Tighter definition: drop only the far-right tail on opponent strength,
+    // while always keeping strong performers.
+    const upperBound = percentile(strengths, 0.99);
+    const keepIfHighWin = (p: PlayerPoint) => (p.weighted_win_rate ?? 0) >= 0.7;
+
+    const filtered = players.filter((p) => {
+      const strength = p.opponent_strength;
+      if (strength === undefined) return true;
+      if (keepIfHighWin(p)) return true;
+      return strength <= upperBound;
+    });
+    return {
+      filtered,
+      hidden: players.length - filtered.length,
+      upperBound,
+    };
+  }, [hideOutliers, players]);
 
   useEffect(() => {
     if (!mainVisible) return; // delay data fetch until after splash finishes
@@ -239,9 +281,17 @@ export default function Home() {
           <div className="chart-card">
             <div className="chart-card__header">
               <span className="mock-pill">
-                {selectedSource.label} · {players.length} players
+                {selectedSource.label} · {filteredData.filtered.length} players
               </span>
               <span className="mock-pill mock-pill--ghost">Weighted win rate vs strength</span>
+              <button
+                className={`pill-toggle ${hideOutliers ? "pill-toggle--active" : ""}`}
+                type="button"
+                onClick={() => setHideOutliers((v) => !v)}
+              >
+                {hideOutliers ? "Outliers hidden" : "Hide outliers"}
+                {filteredData.hidden > 0 ? ` (${filteredData.hidden})` : ""}
+              </button>
             </div>
             <div className="chart-card__body">
               <ResponsiveContainer width="100%" height={420}>
@@ -271,7 +321,7 @@ export default function Home() {
                     animationDuration={0}
                   />
                   <Scatter
-                    data={players}
+                    data={filteredData.filtered}
                     fill="#4ade80"
                     fillOpacity={0.95}
                     stroke="rgba(0,0,0,0.35)"
@@ -284,8 +334,13 @@ export default function Home() {
                 <p className="chart-status">Loading data…</p>
               ) : error ? (
                 <p className="chart-status chart-status--error">Error: {error}</p>
-              ) : players.length === 0 ? (
+              ) : filteredData.filtered.length === 0 ? (
                 <p className="chart-status">No players for this state.</p>
+              ) : hideOutliers && filteredData.hidden > 0 ? (
+                <p className="chart-status text-xs text-foreground/60">
+                  Hiding {filteredData.hidden} outlier(s)
+                  {filteredData.upperBound ? ` above strength ≈ ${filteredData.upperBound.toFixed(3)}` : ""}.
+                </p>
               ) : null}
             </div>
           </div>

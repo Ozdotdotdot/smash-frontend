@@ -400,6 +400,29 @@ body {
   border-color: color-mix(in srgb, #2f6bff 60%, transparent);
 }
 
+.pill-toggle {
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 16%, transparent);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  color: var(--foreground);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.pill-toggle:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--foreground) 34%, transparent);
+}
+
+.pill-toggle--active {
+  background: color-mix(in srgb, #2f6bff 20%, transparent);
+  border-color: color-mix(in srgb, #2f6bff 60%, transparent);
+}
+
 .steps {
   list-style: none;
   display: grid;
