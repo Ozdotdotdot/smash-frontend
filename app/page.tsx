@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   CartesianGrid,
@@ -161,8 +162,11 @@ export default function Home() {
                 Smash Watch crunches local bracket data to reveal who’s overperforming, who’s consistent, and who you should be watching out for.
               </p>
               <div className="flex flex-wrap gap-3">
-                <a className="btn" href="#visualization">
-                  View example dashboard
+                <Link className="btn" href="/dashboard">
+                  Open dashboard page
+                </Link>
+                <a className="btn btn--ghost" href="#visualization">
+                  Jump to example chart
                 </a>
                 <a
                   className="btn btn--ghost"
