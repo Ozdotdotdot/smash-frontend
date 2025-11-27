@@ -15,6 +15,12 @@ import {
 
 type SplashPhase = "full" | "compact" | "hidden";
 
+type DataSource = {
+  id: string;
+  label: string;
+  api: string;
+};
+
 type PlayerPoint = {
   player_id?: number;
   gamer_tag: string;
@@ -52,10 +58,28 @@ export default function Home() {
   const [phase, setPhase] = useState<SplashPhase>("full");
   const frames = ["smash.watch", "smas.wtch", "sma.wch", "ss.wh", "s.w"];
   const [frameIndex, setFrameIndex] = useState(0);
-  const [selectedState, setSelectedState] = useState("GA");
+  const dataSources: DataSource[] = [
+    {
+      id: "ga-default",
+      label: "GA",
+      api: `/api/precomputed?state=GA&months_back=3&limit=0&filter_state=GA`,
+    },
+    {
+      id: "ga-4o4",
+      label: "GA · 4o4 series",
+      api: `/api/precomputed_series?state=GA&months_back=3&limit=0&tournament_contains=4o4`,
+    },
+    {
+      id: "port-priority-9",
+      label: "Port Priority 9",
+      api: `/api/precomputed_series?state=WA&months_back=3&limit=0&series_key=port-priority-9`,
+    },
+  ];
+  const [selectedSourceId, setSelectedSourceId] = useState(dataSources[0]?.id ?? "ga-default");
   const [players, setPlayers] = useState<PlayerPoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const selectedSource = dataSources.find((src) => src.id === selectedSourceId) ?? dataSources[0];
 
   useEffect(() => {
     const firstFrameDuration = 1400; // linger a bit longer on the full name
@@ -93,11 +117,7 @@ export default function Home() {
 
   const mainVisible = phase === "hidden";
   const markText = frames[frameIndex] ?? frames[0];
-  const apiUrl = useMemo(
-    () =>
-      `/api/precomputed?state=${selectedState}&months_back=3&limit=0&filter_state=${selectedState}`,
-    [selectedState],
-  );
+  const apiUrl = useMemo(() => selectedSource.api, [selectedSource]);
 
   useEffect(() => {
     if (!mainVisible) return; // delay data fetch until after splash finishes
@@ -109,8 +129,13 @@ export default function Home() {
         if (!res.ok) throw new Error(`API error ${res.status}`);
         return res.json();
       })
-      .then((json: { results?: PlayerPoint[] }) => {
-        setPlayers((json.results ?? []) as PlayerPoint[]);
+      .then((json: { results?: PlayerPoint[]; data?: PlayerPoint[] } | PlayerPoint[]) => {
+        if (Array.isArray(json)) {
+          setPlayers(json as PlayerPoint[]);
+          return;
+        }
+        const rows = (json.results ?? json.data ?? []) as PlayerPoint[];
+        setPlayers(rows);
       })
       .catch((err) => {
         if ((err as Error).name === "AbortError") return;
@@ -196,14 +221,14 @@ export default function Home() {
               Roadmap: browser-native dashboard, character filters, and per-region presets.
             </p>
             <div className="flex flex-wrap gap-2 pt-3">
-              {["GA", "TX", "CA", "NY"].map((state) => (
+              {dataSources.map((src) => (
                 <button
-                  key={state}
-                  className={`state-pill ${state === selectedState ? "state-pill--active" : ""}`}
-                  onClick={() => setSelectedState(state)}
+                  key={src.id}
+                  className={`state-pill ${selectedSourceId === src.id ? "state-pill--active" : ""}`}
+                  onClick={() => setSelectedSourceId(src.id)}
                   type="button"
                 >
-                  {state}
+                  {src.label}
                 </button>
               ))}
             </div>
@@ -214,7 +239,7 @@ export default function Home() {
           <div className="chart-card">
             <div className="chart-card__header">
               <span className="mock-pill">
-                {selectedState} · last 3 months · {players.length} players
+                {selectedSource.label} · {players.length} players
               </span>
               <span className="mock-pill mock-pill--ghost">Weighted win rate vs strength</span>
             </div>
