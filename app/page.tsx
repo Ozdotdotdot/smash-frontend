@@ -188,9 +188,9 @@ export default function Home() {
           <div className="section__copy">
             <h2 className="section__title">A single scatter plot that tells the story</h2>
             <p>
-              Each point is a player from your chosen state, positioned by weighted win rate
+              View some of our featured dashboards! Each point is a player from your chosen state, positioned by weighted win rate
               and opponent strength. Filtered via API; rendered in Altair / Jupyter today,
-              with a browser dashboard on the way.
+              with a browser dashboard on the way..
             </p>
             <p className="text-sm text-foreground/65">
               Roadmap: browser-native dashboard, character filters, and per-region presets.
