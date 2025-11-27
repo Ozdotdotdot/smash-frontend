@@ -57,7 +57,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const firstFrameDuration = 1100; // linger a bit longer on the full name
+    const firstFrameDuration = 1400; // linger a bit longer on the full name
     const frameDuration = 140; // quick collapse progression
 
     let intervalRef: ReturnType<typeof setInterval> | null = null;
