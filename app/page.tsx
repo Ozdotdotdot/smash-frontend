@@ -73,7 +73,7 @@ export default function Home() {
     {
       id: "ga-4o4",
       label: "GA · 4o4 series",
-      api: `/api/precomputed_series?state=GA&months_back=3&limit=0&tournament_contains=4o4`,
+      api: `/api/precomputed_series?state=GA&months_back=3&limit=0&tournament_contains=4o4&series_key=4o4-by-sh33rz-weekly-smash`,
     },
     {
       id: "ga-default",
