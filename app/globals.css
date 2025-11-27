@@ -257,16 +257,9 @@ body {
 }
 
 .section--split {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 1.6rem;
-}
-
-@media (min-width: 900px) {
-  .section--split {
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-  }
 }
 
 .section__copy p {
@@ -339,6 +332,7 @@ body {
   flex-direction: column;
   gap: 1rem;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  width: 100%;
 }
 
 .chart-card__header {
