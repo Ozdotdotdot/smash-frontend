@@ -27,6 +27,77 @@ import {
   TableRow,
 } from "@/ui/apps/www/components/ui/table";
 
+function ToggleLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M21 5H7a4 4 0 0 0 0 8h14a4 4 0 0 0 0-8Z" />
+      <circle cx="8" cy="9" r="3" />
+    </svg>
+  );
+}
+
+function ToggleRightIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M3 5h14a4 4 0 0 1 0 8H3a4 4 0 0 1 0-8Z" />
+      <circle cx="16" cy="9" r="3" />
+    </svg>
+  );
+}
+
+function SquareIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+    </svg>
+  );
+}
+
+function SquareCheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
 // ========================================
 // PARTICLES CONFIGURATION - Adjust these values as needed
 // ========================================
@@ -107,6 +178,11 @@ function FilterPanel({
   setTournamentFilters,
   onApply,
   onReset,
+  allowMultiSeries,
+  setAllowMultiSeries,
+  seriesOptions,
+  selectedSeriesKey,
+  onSelectSeries,
 }: {
   viewType: ViewType;
   setViewType: (value: ViewType) => void;
@@ -116,6 +192,11 @@ function FilterPanel({
   setTournamentFilters: (value: TournamentFilters) => void;
   onApply: () => void;
   onReset: () => void;
+  allowMultiSeries: boolean;
+  setAllowMultiSeries: (value: boolean) => void;
+  seriesOptions: Array<{ key: string; label: string }>;
+  selectedSeriesKey: string | null;
+  onSelectSeries: (key: string) => void;
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -389,6 +470,21 @@ function FilterPanel({
                   setTournamentFilters({ ...tournamentFilters, series: event.target.value })
                 }
               />
+              <div className="mt-1 flex items-center justify-between text-[11px] text-foreground/60">
+                <span>Allow multiple series?</span>
+                <button
+                  type="button"
+                  onClick={() => setAllowMultiSeries((v) => !v)}
+                  aria-pressed={allowMultiSeries}
+                  className="rounded-md border border-white/10 bg-black/50 p-1.5 text-foreground transition hover:border-white/20 hover:text-white"
+                >
+                  {allowMultiSeries ? (
+                    <SquareCheckIcon className="h-4 w-4" />
+                  ) : (
+                    <SquareIcon className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </label>
 
             <label className="flex flex-col gap-1 text-sm">
@@ -423,6 +519,30 @@ function FilterPanel({
             </label>
 
             {advancedSection(tournamentFilters, setTournamentFilters)}
+
+            {seriesOptions.length > 0 && (
+              <div className="space-y-2 rounded-md border border-white/10 bg-black/20 p-3">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground/70">
+                  Select a series
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {seriesOptions.map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => onSelectSeries(opt.key)}
+                      className={`rounded-full border px-3 py-1 text-sm transition ${
+                        selectedSeriesKey === opt.key
+                          ? "border-white/60 bg-white/20 text-white"
+                          : "border-white/15 bg-black/40 text-foreground hover:border-white/30"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-2">
               <button
@@ -480,6 +600,9 @@ export default function DashboardPage() {
   const [chartData, setChartData] = useState<PlayerPoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [allowMultiSeries, setAllowMultiSeries] = useState(false);
+  const [seriesOptions, setSeriesOptions] = useState<Array<{ key: string; label: string }>>([]);
+  const [selectedSeriesKey, setSelectedSeriesKey] = useState<string | null>(null);
 
   const selectedMonthsBack = useMemo(
     () => TIMEFRAME_TO_MONTHS[stateFilters.timeframe] ?? 3,
@@ -530,23 +653,27 @@ export default function DashboardPage() {
     return { slug: withPrefix, baseSlug: baseWithPrefix, raw: rawSlug };
   };
 
-  const buildTournamentQuery = () => {
+  const buildTournamentQuery = (seriesKey?: string, allowMulti?: boolean) => {
     const monthsBack = TIMEFRAME_TO_MONTHS[tournamentFilters.timeframe] ?? 3;
     const params = new URLSearchParams({
       state: tournamentFilters.state.trim().toUpperCase(),
       months_back: String(monthsBack),
       limit: "0",
     });
-    const { slug, baseSlug, raw } = parseTournamentSlug(tournamentFilters.slugOrUrl);
-    if (slug) {
-      if (raw) params.append("tournament_slug_contains", raw);
-      const baseRaw = raw.replace(/-\d+$/, "");
-      if (baseRaw && baseRaw !== raw) params.append("tournament_slug_contains", baseRaw);
-      params.append("tournament_slug_contains", slug);
-      if (baseSlug && baseSlug !== slug) params.append("tournament_slug_contains", baseSlug);
-    }
-    if (tournamentFilters.series.trim()) {
-      params.set("tournament_contains", tournamentFilters.series.trim());
+    if (seriesKey) {
+      params.set("series_key", seriesKey);
+    } else {
+      const { slug, baseSlug, raw } = parseTournamentSlug(tournamentFilters.slugOrUrl);
+      if (slug) {
+        if (raw) params.append("tournament_slug_contains", raw);
+        const baseRaw = raw.replace(/-\d+$/, "");
+        if (baseRaw && baseRaw !== raw) params.append("tournament_slug_contains", baseRaw);
+        params.append("tournament_slug_contains", slug);
+        if (baseSlug && baseSlug !== slug) params.append("tournament_slug_contains", baseSlug);
+      }
+      if (tournamentFilters.series.trim()) {
+        params.set("tournament_contains", tournamentFilters.series.trim());
+      }
     }
     if (tournamentFilters.filterStates.trim()) {
       tournamentFilters.filterStates
@@ -556,6 +683,9 @@ export default function DashboardPage() {
         .forEach((code) => params.append("filter_state", code));
     } else if (tournamentFilters.state.trim()) {
       params.set("filter_state", tournamentFilters.state.trim().toUpperCase());
+    }
+    if (allowMulti) {
+      params.set("allow_multi", "true");
     }
     const maybeSet = (key: string, val: string) => {
       if (val.trim().length > 0) params.set(key, val.trim());
@@ -568,6 +698,42 @@ export default function DashboardPage() {
       params.set("start_after", tournamentFilters.startAfter);
     }
     return params;
+  };
+
+  const loadPrecomputedSeries = (params: URLSearchParams) => {
+    setIsLoading(true);
+    setError(null);
+    fetch(`/api/precomputed_series?${params.toString()}`, { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) throw new Error(`API error ${res.status}`);
+        return res.json();
+      })
+      .then(
+        (json: {
+          results?: PlayerPoint[];
+          series_keys?: string[];
+          resolved_labels?: string[];
+        }) => {
+          setChartData(json.results ?? []);
+          if (json.series_keys && json.series_keys.length > 0) {
+            const labels = json.resolved_labels ?? [];
+            setSeriesOptions(
+              json.series_keys.map((key, idx) => ({
+                key,
+                label: labels[idx] ?? key,
+              })),
+            );
+          } else {
+            setSeriesOptions([]);
+          }
+        },
+      )
+      .catch((err) => {
+        setError((err as Error).message);
+        setChartData([]);
+        setSeriesOptions([]);
+      })
+      .finally(() => setIsLoading(false));
   };
 
   const handleApply = () => {
@@ -626,6 +792,8 @@ export default function DashboardPage() {
       maybeSet(params, "min_large_event_share", tournamentFilters.minLargeEventShare);
       if (tournamentFilters.startAfter) params.set("start_after", tournamentFilters.startAfter);
 
+      setSeriesOptions([]);
+      setSelectedSeriesKey(null);
       setIsLoading(true);
       setError(null);
       fetch(`/api/search?${params.toString()}`, { cache: "no-store" })
@@ -645,22 +813,9 @@ export default function DashboardPage() {
     }
 
     // Otherwise fall back to precomputed series discovery.
-    const params = buildTournamentQuery();
-    setIsLoading(true);
-    setError(null);
-    fetch(`/api/precomputed_series?${params.toString()}`, { cache: "no-store" })
-      .then((res) => {
-        if (!res.ok) throw new Error(`API error ${res.status}`);
-        return res.json();
-      })
-      .then((json: { results?: PlayerPoint[] }) => {
-        setChartData(json.results ?? []);
-      })
-      .catch((err) => {
-        setError((err as Error).message);
-        setChartData([]);
-      })
-      .finally(() => setIsLoading(false));
+    const params = buildTournamentQuery(undefined, allowMultiSeries);
+    setSelectedSeriesKey(null);
+    loadPrecomputedSeries(params);
   };
 
   const handleReset = () => {
@@ -691,6 +846,9 @@ export default function DashboardPage() {
       minLargeEventShare: "",
       startAfter: "",
     });
+    setAllowMultiSeries(false);
+    setSeriesOptions([]);
+    setSelectedSeriesKey(null);
   };
 
   const ChartTooltip = ({ active, payload }: TooltipProps<number, string>) => {
@@ -772,6 +930,14 @@ export default function DashboardPage() {
               setTournamentFilters={setTournamentFilters}
               onApply={handleApply}
               onReset={handleReset}
+              allowMultiSeries={allowMultiSeries}
+              setAllowMultiSeries={setAllowMultiSeries}
+              seriesOptions={seriesOptions}
+              selectedSeriesKey={selectedSeriesKey}
+              onSelectSeries={(key) => {
+                setSelectedSeriesKey(key);
+                loadPrecomputedSeries(buildTournamentQuery(key, false));
+              }}
             />
           )}
         </aside>
@@ -931,6 +1097,14 @@ export default function DashboardPage() {
           setTournamentFilters={setTournamentFilters}
           onApply={handleApply}
           onReset={handleReset}
+          allowMultiSeries={allowMultiSeries}
+          setAllowMultiSeries={setAllowMultiSeries}
+          seriesOptions={seriesOptions}
+          selectedSeriesKey={selectedSeriesKey}
+          onSelectSeries={(key) => {
+            setSelectedSeriesKey(key);
+            loadPrecomputedSeries(buildTournamentQuery(key, false));
+          }}
         />
       </aside>
     </div>
