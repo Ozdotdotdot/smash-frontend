@@ -183,6 +183,8 @@ function FilterPanel({
   seriesOptions,
   selectedSeriesKey,
   onSelectSeries,
+  hideOutliers,
+  setHideOutliers,
 }: {
   viewType: ViewType;
   setViewType: (value: ViewType) => void;
@@ -197,6 +199,8 @@ function FilterPanel({
   seriesOptions: Array<{ key: string; label: string }>;
   selectedSeriesKey: string | null;
   onSelectSeries: (key: string) => void;
+  hideOutliers: boolean;
+  setHideOutliers: (value: boolean) => void;
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -213,6 +217,8 @@ function FilterPanel({
   const advancedSection = (
     filters: StateFilters | TournamentFilters,
     setter: (value: any) => void,
+    hideOutliers: boolean,
+    setHideOutliers: (value: boolean) => void,
   ) => (
     <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-3">
       <button
@@ -344,7 +350,7 @@ function FilterPanel({
           <label className="flex flex-col gap-1 text-sm">
             {labelWithTooltip(
               "Start After",
-              "Drop players whose most recent event started before this date (YYYY-MM-DD)."
+              "Drop players whose most recent event started on or after this date (MM/DD/YYYY via picker)."
             )}
             <input
               type="date"
@@ -353,6 +359,24 @@ function FilterPanel({
               onChange={(event) => setter({ ...filters, startAfter: event.target.value })}
             />
           </label>
+
+          <div className="flex items-center justify-between rounded-md border border-white/10 bg-black/30 px-3 py-2 text-sm">
+            <div className="flex flex-col">
+              <span className="font-semibold text-foreground">Hide outliers</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setHideOutliers(!hideOutliers)}
+              aria-pressed={hideOutliers}
+              className="rounded-md border border-white/10 bg-black/50 p-2 text-foreground transition hover:border-white/20 hover:text-white"
+            >
+              {hideOutliers ? (
+                <SquareCheckIcon className="h-4 w-4" />
+              ) : (
+                <SquareIcon className="h-4 w-4" />
+              )}
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -423,7 +447,7 @@ function FilterPanel({
               </select>
             </label>
 
-            {advancedSection(stateFilters, setStateFilters)}
+            {advancedSection(stateFilters, setStateFilters, hideOutliers, setHideOutliers)}
 
             <div className="flex gap-2">
               <button
@@ -518,7 +542,7 @@ function FilterPanel({
               </select>
             </label>
 
-            {advancedSection(tournamentFilters, setTournamentFilters)}
+            {advancedSection(tournamentFilters, setTournamentFilters, hideOutliers, setHideOutliers)}
 
             {seriesOptions.length > 0 && (
               <div className="space-y-2 rounded-md border border-white/10 bg-black/20 p-3">
@@ -603,6 +627,7 @@ export default function DashboardPage() {
   const [allowMultiSeries, setAllowMultiSeries] = useState(false);
   const [seriesOptions, setSeriesOptions] = useState<Array<{ key: string; label: string }>>([]);
   const [selectedSeriesKey, setSelectedSeriesKey] = useState<string | null>(null);
+  const [hideOutliers, setHideOutliers] = useState(false);
 
   const selectedMonthsBack = useMemo(
     () => TIMEFRAME_TO_MONTHS[stateFilters.timeframe] ?? 3,
@@ -617,6 +642,33 @@ export default function DashboardPage() {
       ),
     [chartData],
   );
+  const displayedPoints = useMemo(() => {
+    if (!hideOutliers) return chartPoints;
+    if (chartPoints.length < 6) return chartPoints;
+
+    const strengths = chartPoints
+      .map((p) => p.opponent_strength ?? 0)
+      .filter((v) => Number.isFinite(v))
+      .sort((a, b) => a - b);
+    if (!strengths.length) return chartPoints;
+
+    const percentile = (arr: number[], p: number) => {
+      const idx = (arr.length - 1) * p;
+      const lower = Math.floor(idx);
+      const upper = Math.ceil(idx);
+      if (lower === upper) return arr[lower];
+      return arr[lower] + (arr[upper] - arr[lower]) * (idx - lower);
+    };
+    const upperBound = percentile(strengths, 0.99);
+    const keepIfHighWin = (p: PlayerPoint) => (p.weighted_win_rate ?? 0) >= 0.7;
+
+    return chartPoints.filter((p) => {
+      const strength = p.opponent_strength;
+      if (strength === undefined) return true;
+      if (keepIfHighWin(p)) return true;
+      return strength <= upperBound;
+    });
+  }, [chartPoints, hideOutliers]);
 
   const buildStateQuery = () => {
     const params = new URLSearchParams({
@@ -908,6 +960,7 @@ export default function DashboardPage() {
     setAllowMultiSeries(false);
     setSeriesOptions([]);
     setSelectedSeriesKey(null);
+    setHideOutliers(false);
   };
 
   const ChartTooltip = ({ active, payload }: TooltipProps<number, string>) => {
@@ -997,6 +1050,8 @@ export default function DashboardPage() {
                 setSelectedSeriesKey(key);
                 loadPrecomputedSeries(buildTournamentQuery(key, false), false);
               }}
+              hideOutliers={hideOutliers}
+              setHideOutliers={setHideOutliers}
             />
           )}
         </aside>
@@ -1033,7 +1088,7 @@ export default function DashboardPage() {
                   No data yet. Apply filters to fetch state-wide metrics.
                 </div>
               )}
-              {chartPoints.length > 0 && (
+              {displayedPoints.length > 0 && (
                 <>
                   <div className="h-[480px] rounded-lg border border-white/10 bg-black/40 p-3">
                     <ResponsiveContainer width="100%" height="100%">
@@ -1064,14 +1119,14 @@ export default function DashboardPage() {
                           wrapperStyle={{ transition: "none" }}
                           animationDuration={0}
                         />
-                        <Scatter
-                          name="Players"
-                          data={chartPoints}
-                          fill="#4ade80"
-                          fillOpacity={0.95}
-                          stroke="rgba(0,0,0,0.35)"
-                          strokeWidth={0.6}
-                          isAnimationActive={false}
+                      <Scatter
+                        name="Players"
+                        data={displayedPoints}
+                        fill="#4ade80"
+                        fillOpacity={0.95}
+                        stroke="rgba(0,0,0,0.35)"
+                        strokeWidth={0.6}
+                        isAnimationActive={false}
                         />
                       </ScatterChart>
                     </ResponsiveContainer>
@@ -1080,7 +1135,7 @@ export default function DashboardPage() {
                   <div className="mt-4 overflow-hidden rounded-lg border border-white/10 bg-black/30">
                     <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs uppercase tracking-[0.2em] text-foreground/60">
                       <span>Players</span>
-                      <span>{chartPoints.length} rows</span>
+                      <span>{displayedPoints.length} rows</span>
                     </div>
                     <Table>
                       <TableHeader className="bg-white/5 text-sm font-medium">
@@ -1092,7 +1147,7 @@ export default function DashboardPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody className="text-sm">
-                        {chartPoints.map((row, idx) => (
+                        {displayedPoints.map((row, idx) => (
                           <TableRow
                             key={`${row.player_id ?? row.gamer_tag ?? "row"}-${idx}`}
                             className="border-b border-white/5 last:border-0"
@@ -1116,14 +1171,18 @@ export default function DashboardPage() {
                   </div>
                 </>
               )}
-                    </div>
-
-                    {chartData.length > chartPoints.length && (
-                      <div className="px-4 py-2 text-xs text-foreground/60">
-                        {chartData.length - chartPoints.length} row(s) skipped (missing win rate or opponent strength).
-                      </div>
-                    )}
-                  </div>
+              {chartData.length > chartPoints.length && (
+                <div className="px-4 py-2 text-xs text-foreground/60">
+                  {chartData.length - chartPoints.length} row(s) skipped (missing win rate or opponent strength).
+                </div>
+              )}
+              {displayedPoints.length < chartPoints.length && hideOutliers && (
+                <div className="px-4 py-2 text-xs text-foreground/60">
+                  {chartPoints.length - displayedPoints.length} outlier(s) hidden.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1170,6 +1229,8 @@ export default function DashboardPage() {
             setSelectedSeriesKey(key);
             loadPrecomputedSeries(buildTournamentQuery(key, false), false);
           }}
+          hideOutliers={hideOutliers}
+          setHideOutliers={setHideOutliers}
         />
       </aside>
     </div>
