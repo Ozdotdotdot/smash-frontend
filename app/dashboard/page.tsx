@@ -18,6 +18,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/ui/apps/www/components/ui/tooltip";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/ui/apps/www/components/ui/table";
 
 // ========================================
 // PARTICLES CONFIGURATION - Adjust these values as needed
@@ -784,47 +792,87 @@ export default function DashboardPage() {
                 </div>
               )}
               {chartData.length > 0 && (
-                <div className="h-[480px] rounded-lg border border-white/10 bg-black/40 p-3">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ScatterChart margin={{ top: 24, right: 16, bottom: 24, left: 16 }}>
-                      <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="4 6" />
-                      <XAxis
-                        type="number"
-                        dataKey="opponent_strength"
-                        name="Opponent strength"
-                        domain={[0, "auto"]}
-                        stroke="rgba(255,255,255,0.55)"
-                        tickLine={false}
-                        tick={{ fontSize: 12 }}
-                      />
-                      <YAxis
-                        type="number"
-                        dataKey="weighted_win_rate"
-                        name="Weighted win rate"
-                        domain={[0, 1]}
-                        tickFormatter={(val) => `${Math.round((val ?? 0) * 100)}%`}
-                        stroke="rgba(255,255,255,0.55)"
-                        tickLine={false}
-                        tick={{ fontSize: 12 }}
-                      />
-                      <RechartsTooltip
-                        cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
-                        content={<ChartTooltip />}
-                        wrapperStyle={{ transition: "none" }}
-                        animationDuration={0}
-                      />
-                      <Scatter
-                        name="Players"
-                        data={chartData}
-                        fill="#4ade80"
-                        fillOpacity={0.95}
-                        stroke="rgba(0,0,0,0.35)"
-                        strokeWidth={0.6}
-                        isAnimationActive={false}
-                      />
-                    </ScatterChart>
-                  </ResponsiveContainer>
-                </div>
+                <>
+                  <div className="h-[480px] rounded-lg border border-white/10 bg-black/40 p-3">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ScatterChart margin={{ top: 24, right: 16, bottom: 24, left: 16 }}>
+                        <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="4 6" />
+                        <XAxis
+                          type="number"
+                          dataKey="opponent_strength"
+                          name="Opponent strength"
+                          domain={[0, "auto"]}
+                          stroke="rgba(255,255,255,0.55)"
+                          tickLine={false}
+                          tick={{ fontSize: 12 }}
+                        />
+                        <YAxis
+                          type="number"
+                          dataKey="weighted_win_rate"
+                          name="Weighted win rate"
+                          domain={[0, 1]}
+                          tickFormatter={(val) => `${Math.round((val ?? 0) * 100)}%`}
+                          stroke="rgba(255,255,255,0.55)"
+                          tickLine={false}
+                          tick={{ fontSize: 12 }}
+                        />
+                        <RechartsTooltip
+                          cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
+                          content={<ChartTooltip />}
+                          wrapperStyle={{ transition: "none" }}
+                          animationDuration={0}
+                        />
+                        <Scatter
+                          name="Players"
+                          data={chartData}
+                          fill="#4ade80"
+                          fillOpacity={0.95}
+                          stroke="rgba(0,0,0,0.35)"
+                          strokeWidth={0.6}
+                          isAnimationActive={false}
+                        />
+                      </ScatterChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="mt-4 overflow-hidden rounded-lg border border-white/10 bg-black/30">
+                    <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs uppercase tracking-[0.2em] text-foreground/60">
+                      <span>Players</span>
+                      <span>{chartData.length} rows</span>
+                    </div>
+                    <Table>
+                      <TableHeader className="bg-white/5 text-sm font-medium">
+                        <TableRow className="border-b border-white/5">
+                          <TableHead className="px-4 py-3 text-left">Player</TableHead>
+                          <TableHead className="px-4 py-3 text-left">Win rate</TableHead>
+                          <TableHead className="px-4 py-3 text-left">Opp strength</TableHead>
+                          <TableHead className="px-4 py-3 text-left">State</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody className="text-sm">
+                        {chartData.map((row, idx) => (
+                          <TableRow
+                            key={row.player_id ?? `${row.gamer_tag}-${idx}`}
+                            className="border-b border-white/5 last:border-0"
+                          >
+                            <TableCell className="px-4 py-3 font-semibold">
+                              {row.gamer_tag ?? "Unknown"}
+                            </TableCell>
+                            <TableCell className="px-4 py-3">
+                              {`${Math.round((row.weighted_win_rate ?? 0) * 100)}%`}
+                            </TableCell>
+                            <TableCell className="px-4 py-3">
+                              {row.opponent_strength !== undefined
+                                ? row.opponent_strength.toFixed(3)
+                                : "—"}
+                            </TableCell>
+                            <TableCell className="px-4 py-3">{row.home_state ?? "—"}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </>
               )}
             </div>
           </div>
