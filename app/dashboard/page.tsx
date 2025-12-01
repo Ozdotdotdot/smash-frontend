@@ -1,6 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import {
+  CartesianGrid,
+  ResponsiveContainer,
+  Scatter,
+  ScatterChart,
+  Tooltip as RechartsTooltip,
+  TooltipProps,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import Particles from "@/react-bits/src/content/Backgrounds/Particles/Particles";
 import {
@@ -53,11 +63,25 @@ type TournamentFilters = {
   startAfter: string;
 };
 
+type PlayerPoint = {
+  player_id?: number;
+  gamer_tag: string;
+  weighted_win_rate: number;
+  opponent_strength: number;
+  home_state?: string;
+};
+
 const TIMEFRAME_OPTIONS = [
   { value: "30d", label: "Last 30 days" },
   { value: "60d", label: "Last 60 days" },
   { value: "3m", label: "Last 3 months" },
 ];
+
+const TIMEFRAME_TO_MONTHS: Record<string, number> = {
+  "30d": 1,
+  "60d": 2,
+  "3m": 3,
+};
 
 const VIEW_ITEMS: Array<{ value: ViewType; label: string }> = [
   { value: "state", label: "State" },
@@ -410,11 +434,63 @@ export default function DashboardPage() {
     minLargeEventShare: "",
     startAfter: "",
   });
+  const [chartData, setChartData] = useState<PlayerPoint[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const selectedMonthsBack = useMemo(
+    () => TIMEFRAME_TO_MONTHS[stateFilters.timeframe] ?? 3,
+    [stateFilters.timeframe],
+  );
+
+  const buildStateQuery = () => {
+    const params = new URLSearchParams({
+      state: stateFilters.region.trim().toUpperCase(),
+      months_back: String(selectedMonthsBack),
+      limit: "0",
+    });
+    if (stateFilters.characters.trim()) {
+      const firstCharacter = stateFilters.characters.split(",")[0]?.trim();
+      if (firstCharacter) params.set("character", firstCharacter);
+    }
+    const maybeSet = (key: string, val: string) => {
+      if (val.trim().length > 0) params.set(key, val.trim());
+    };
+    maybeSet("min_entrants", stateFilters.minEntrants);
+    maybeSet("max_entrants", stateFilters.maxEntrants);
+    maybeSet("min_max_event_entrants", stateFilters.minMaxEventEntrants);
+    maybeSet("large_event_threshold", stateFilters.largeEventThreshold);
+    maybeSet("min_large_event_share", stateFilters.minLargeEventShare);
+    if (stateFilters.startAfter) params.set("start_after", stateFilters.startAfter);
+    if (stateFilters.region.trim()) {
+      params.set("filter_state", stateFilters.region.trim().toUpperCase());
+    }
+    return params;
+  };
 
   const handleApply = () => {
-    // Placeholder for wiring into data-fetching logic per view type.
+    if (viewType === "state") {
+      const params = buildStateQuery();
+      setIsLoading(true);
+      setError(null);
+      fetch(`/api/precomputed?${params.toString()}`, { cache: "no-store" })
+        .then((res) => {
+          if (!res.ok) throw new Error(`API error ${res.status}`);
+          return res.json();
+        })
+        .then((json: { results?: PlayerPoint[] }) => {
+          setChartData(json.results ?? []);
+        })
+        .catch((err) => {
+          setError((err as Error).message);
+          setChartData([]);
+        })
+        .finally(() => setIsLoading(false));
+      return;
+    }
+    // Tournament view wiring will target /api/precomputed_series similarly.
     // eslint-disable-next-line no-console
-    console.log("Apply filters", { viewType, stateFilters, tournamentFilters });
+    console.log("Tournament filters pending hookup", { tournamentFilters });
   };
 
   const handleReset = () => {
@@ -443,6 +519,31 @@ export default function DashboardPage() {
       minLargeEventShare: "",
       startAfter: "",
     });
+  };
+
+  const ChartTooltip = ({ active, payload }: TooltipProps<number, string>) => {
+    if (!active || !payload?.length) return null;
+    const row = payload[0]?.payload as PlayerPoint | undefined;
+    if (!row) return null;
+    const winRate = `${Math.round((row.weighted_win_rate ?? 0) * 100)}%`;
+    const strength =
+      row.opponent_strength !== undefined
+        ? Number(row.opponent_strength.toFixed(3))
+        : "—";
+
+    return (
+      <div className="chart-tooltip">
+        <div className="chart-tooltip__name">{row.gamer_tag ?? "Unknown"}</div>
+        <div className="chart-tooltip__line">
+          <span>Win rate</span>
+          <span>{winRate}</span>
+        </div>
+        <div className="chart-tooltip__line">
+          <span>Opp strength</span>
+          <span>{strength}</span>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -519,8 +620,66 @@ export default function DashboardPage() {
           <div className="rounded-xl border border-white/10 bg-black/30 p-6 backdrop-blur">
             <h1 className="text-2xl font-semibold">Dashboard</h1>
             <p className="mt-2 text-sm text-foreground/70">
-              Use the side panel to house data filter controls.
+              Pick filters, then render a state-wide view of weighted win rate vs opponent strength.
             </p>
+            <div className="mt-4 space-y-3">
+              {error && (
+                <div className="rounded-md border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                  {error}
+                </div>
+              )}
+              {isLoading && (
+                <div className="text-sm text-foreground/70">Loading data…</div>
+              )}
+              {!isLoading && !error && chartData.length === 0 && (
+                <div className="text-sm text-foreground/60">
+                  No data yet. Apply filters to fetch state-wide metrics.
+                </div>
+              )}
+              {chartData.length > 0 && (
+                <div className="h-[480px] rounded-lg border border-white/10 bg-black/40 p-3">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ScatterChart margin={{ top: 24, right: 16, bottom: 24, left: 16 }}>
+                      <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="4 6" />
+                      <XAxis
+                        type="number"
+                        dataKey="opponent_strength"
+                        name="Opponent strength"
+                        domain={[0, "auto"]}
+                        stroke="rgba(255,255,255,0.55)"
+                        tickLine={false}
+                        tick={{ fontSize: 12 }}
+                      />
+                      <YAxis
+                        type="number"
+                        dataKey="weighted_win_rate"
+                        name="Weighted win rate"
+                        domain={[0, 1]}
+                        tickFormatter={(val) => `${Math.round((val ?? 0) * 100)}%`}
+                        stroke="rgba(255,255,255,0.55)"
+                        tickLine={false}
+                        tick={{ fontSize: 12 }}
+                      />
+                      <RechartsTooltip
+                        cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
+                        content={<ChartTooltip />}
+                        wrapperStyle={{ transition: "none" }}
+                        animationDuration={0}
+                      />
+                      <Scatter
+                        name="Players"
+                        data={chartData}
+                        fill="#4ade80"
+                        fillOpacity={0.95}
+                        stroke="rgba(0,0,0,0.35)"
+                        strokeWidth={0.6}
+                        isAnimationActive={false}
+                      />
+                    </ScatterChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
