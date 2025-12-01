@@ -468,6 +468,48 @@ export default function DashboardPage() {
     return params;
   };
 
+  const parseTournamentSlug = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return { slug: "", baseSlug: "" };
+    const parts = trimmed.split("/").filter(Boolean);
+    const idx = parts.findIndex((p) => p === "tournament");
+    const slug = idx >= 0 && parts[idx + 1] ? parts[idx + 1] : parts[parts.length - 1] ?? "";
+    // Many weeklies append -NN; strip that to find the series key (e.g., 4o4-by-sh33rz-weekly-smash-76 -> 4o4-by-sh33rz-weekly-smash).
+    const baseSlug = slug.replace(/-\\d+$/, "");
+    return { slug, baseSlug };
+  };
+
+  const buildTournamentQuery = () => {
+    const monthsBack = TIMEFRAME_TO_MONTHS[tournamentFilters.timeframe] ?? 3;
+    const params = new URLSearchParams({
+      state: tournamentFilters.state.trim().toUpperCase(),
+      months_back: String(monthsBack),
+      limit: "0",
+    });
+    const { slug, baseSlug } = parseTournamentSlug(tournamentFilters.slugOrUrl);
+    if (slug) {
+      params.append("tournament_slug_contains", slug);
+      if (baseSlug && baseSlug !== slug) params.append("tournament_slug_contains", baseSlug);
+    }
+    if (tournamentFilters.series.trim()) {
+      params.set("tournament_contains", tournamentFilters.series.trim());
+    }
+    if (tournamentFilters.state.trim()) {
+      params.set("filter_state", tournamentFilters.state.trim().toUpperCase());
+    }
+    const maybeSet = (key: string, val: string) => {
+      if (val.trim().length > 0) params.set(key, val.trim());
+    };
+    maybeSet("min_entrants", tournamentFilters.minEntrants);
+    maybeSet("max_entrants", tournamentFilters.maxEntrants);
+    maybeSet("min_max_event_entrants", tournamentFilters.minMaxEventEntrants);
+    maybeSet("min_large_event_share", tournamentFilters.minLargeEventShare);
+    if (tournamentFilters.startAfter) {
+      params.set("start_after", tournamentFilters.startAfter);
+    }
+    return params;
+  };
+
   const handleApply = () => {
     if (viewType === "state") {
       const params = buildStateQuery();
@@ -488,9 +530,28 @@ export default function DashboardPage() {
         .finally(() => setIsLoading(false));
       return;
     }
-    // Tournament view wiring will target /api/precomputed_series similarly.
-    // eslint-disable-next-line no-console
-    console.log("Tournament filters pending hookup", { tournamentFilters });
+    const hasSeries = tournamentFilters.series.trim().length > 0;
+    const hasSlug = tournamentFilters.slugOrUrl.trim().length > 0;
+    if (!hasSeries && !hasSlug) {
+      setError("Provide a tournament series or URL/slug to fetch tournament data.");
+      return;
+    }
+    const params = buildTournamentQuery();
+    setIsLoading(true);
+    setError(null);
+    fetch(`/api/precomputed_series?${params.toString()}`, { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) throw new Error(`API error ${res.status}`);
+        return res.json();
+      })
+      .then((json: { results?: PlayerPoint[] }) => {
+        setChartData(json.results ?? []);
+      })
+      .catch((err) => {
+        setError((err as Error).message);
+        setChartData([]);
+      })
+      .finally(() => setIsLoading(false));
   };
 
   const handleReset = () => {
