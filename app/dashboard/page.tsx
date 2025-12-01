@@ -732,6 +732,12 @@ export default function DashboardPage() {
           series_keys?: string[];
           resolved_labels?: string[];
         }) => {
+          if (!json || typeof json !== "object") {
+            setSeriesOptions([]);
+            setChartData([]);
+            setError("Select a series from the options or Allow Multiple Series to load data.");
+            return;
+          }
           const requestedSeriesKey = params.get("series_key");
           const allowMultiParam = params.get("allow_multi") === "true";
           const hasSeriesList = json.series_keys && json.series_keys.length > 0;
@@ -749,6 +755,7 @@ export default function DashboardPage() {
                 })),
               );
               setChartData([]);
+              setError("Select a series from the options or Allow Multiple Series to load data.");
             } else {
               setSeriesOptions([]);
               setChartData(json.results ?? []);
