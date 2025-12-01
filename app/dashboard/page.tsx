@@ -343,6 +343,23 @@ function FilterPanel({
             </label>
 
             {advancedSection(stateFilters, setStateFilters)}
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onApply}
+                className="flex-1 rounded-md border border-white/20 bg-white/20 px-3 py-2 text-sm font-semibold text-foreground shadow-lg shadow-black/20 transition hover:border-white/30 hover:bg-white/25"
+              >
+                Apply Filters
+              </button>
+              <button
+                type="button"
+                onClick={onReset}
+                className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-sm font-semibold text-foreground/80 transition hover:border-white/20 hover:text-foreground"
+              >
+                Reset
+              </button>
+            </div>
           </div>
         )}
 
@@ -406,25 +423,25 @@ function FilterPanel({
             </label>
 
             {advancedSection(tournamentFilters, setTournamentFilters)}
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onApply}
+                className="flex-1 rounded-md border border-white/20 bg-white/20 px-3 py-2 text-sm font-semibold text-foreground shadow-lg shadow-black/20 transition hover:border-white/30 hover:bg-white/25"
+              >
+                Apply Filters
+              </button>
+              <button
+                type="button"
+                onClick={onReset}
+                className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-sm font-semibold text-foreground/80 transition hover:border-white/20 hover:text-foreground"
+              >
+                Reset
+              </button>
+            </div>
           </div>
         )}
-      </div>
-
-      <div className="mt-auto flex gap-2">
-        <button
-          type="button"
-          onClick={onApply}
-          className="flex-1 rounded-md border border-white/20 bg-white/20 px-3 py-2 text-sm font-semibold text-foreground shadow-lg shadow-black/20 transition hover:border-white/30 hover:bg-white/25"
-        >
-          Apply Filters
-        </button>
-        <button
-          type="button"
-          onClick={onReset}
-          className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-sm font-semibold text-foreground/80 transition hover-border-white/20 hover:text-foreground"
-        >
-          Reset
-        </button>
       </div>
     </div>
   );
