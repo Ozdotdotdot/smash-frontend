@@ -700,11 +700,17 @@ export default function DashboardPage() {
     return params;
   };
 
-  const loadPrecomputedSeries = (params: URLSearchParams) => {
+  const loadPrecomputedSeries = (params: URLSearchParams, allowRetry = true) => {
     setIsLoading(true);
     setError(null);
     fetch(`/api/precomputed_series?${params.toString()}`, { cache: "no-store" })
       .then((res) => {
+        if (res.status === 412 && allowRetry && params.get("allow_multi") !== "true") {
+          const retryParams = new URLSearchParams(params);
+          retryParams.set("allow_multi", "true");
+          setAllowMultiSeries(true);
+          return loadPrecomputedSeries(retryParams, false);
+        }
         if (!res.ok) throw new Error(`API error ${res.status}`);
         return res.json();
       })
@@ -714,8 +720,11 @@ export default function DashboardPage() {
           series_keys?: string[];
           resolved_labels?: string[];
         }) => {
-          setChartData(json.results ?? []);
-          if (json.series_keys && json.series_keys.length > 0) {
+          const requestedSeriesKey = params.get("series_key");
+          const allowMulti = params.get("allow_multi") === "true";
+          const hasSeriesList = json.series_keys && json.series_keys.length > 0;
+
+          if (!requestedSeriesKey && allowMulti && hasSeriesList) {
             const labels = json.resolved_labels ?? [];
             setSeriesOptions(
               json.series_keys.map((key, idx) => ({
@@ -723,9 +732,12 @@ export default function DashboardPage() {
                 label: labels[idx] ?? key,
               })),
             );
-          } else {
-            setSeriesOptions([]);
+            setChartData([]);
+            return;
           }
+
+          setSeriesOptions([]);
+          setChartData(json.results ?? []);
         },
       )
       .catch((err) => {
