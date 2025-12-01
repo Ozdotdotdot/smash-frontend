@@ -25,8 +25,13 @@ type ViewType = "state" | "tournament";
 type StateFilters = {
   region: string;
   timeframe: string;
-  game: string;
   characters: string;
+  minEntrants: string;
+  maxEntrants: string;
+  minMaxEventEntrants: string;
+  largeEventThreshold: string;
+  minLargeEventShare: string;
+  startAfter: string;
 };
 
 type TournamentFilters = {
@@ -35,12 +40,18 @@ type TournamentFilters = {
   timeframe: string;
   game: string;
   characters: string;
+  minEntrants: string;
+  maxEntrants: string;
+  minMaxEventEntrants: string;
+  largeEventThreshold: string;
+  minLargeEventShare: string;
+  startAfter: string;
 };
 
 const TIMEFRAME_OPTIONS = [
+  { value: "30d", label: "Last 30 days" },
+  { value: "60d", label: "Last 60 days" },
   { value: "3m", label: "Last 3 months" },
-  { value: "6m", label: "Last 6 months" },
-  { value: "12m", label: "Last 12 months" },
 ];
 
 const VIEW_ITEMS: Array<{ value: ViewType; label: string }> = [
@@ -69,7 +80,12 @@ function FilterPanel({
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const advancedSection = (value: string, onChange: (value: string) => void) => (
+  const advancedSection = (
+    filters:
+      | StateFilters
+      | TournamentFilters,
+    setter: (value: any) => void
+  ) => (
     <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-3">
       <button
         type="button"
@@ -90,8 +106,86 @@ function FilterPanel({
               type="text"
               placeholder="e.g. Falco, Sheik"
               className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
-              value={value}
-              onChange={(event) => onChange(event.target.value)}
+              value={filters.characters}
+              onChange={(event) => setter({ ...filters, characters: event.target.value })}
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-foreground/70">Min Entrants (avg)</span>
+            <input
+              type="number"
+              min={0}
+              placeholder="e.g. 32"
+              className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
+              value={filters.minEntrants}
+              onChange={(event) => setter({ ...filters, minEntrants: event.target.value })}
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-foreground/70">Max Entrants (avg)</span>
+            <input
+              type="number"
+              min={0}
+              placeholder="e.g. 128"
+              className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
+              value={filters.maxEntrants}
+              onChange={(event) => setter({ ...filters, maxEntrants: event.target.value })}
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-foreground/70">Min Largest Event Entrants</span>
+            <input
+              type="number"
+              min={0}
+              placeholder="e.g. 64"
+              className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
+              value={filters.minMaxEventEntrants}
+              onChange={(event) =>
+                setter({ ...filters, minMaxEventEntrants: event.target.value })
+              }
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-foreground/70">Large Event Threshold</span>
+            <input
+              type="number"
+              min={0}
+              placeholder="e.g. 32"
+              className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
+              value={filters.largeEventThreshold}
+              onChange={(event) =>
+                setter({ ...filters, largeEventThreshold: event.target.value })
+              }
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-foreground/70">Min Large Event Share</span>
+            <input
+              type="number"
+              min={0}
+              max={1}
+              step="0.01"
+              placeholder="e.g. 0.33"
+              className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
+              value={filters.minLargeEventShare}
+              onChange={(event) =>
+                setter({ ...filters, minLargeEventShare: event.target.value })
+              }
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-foreground/70">Start After (YYYY-MM-DD)</span>
+            <input
+              type="date"
+              className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
+              value={filters.startAfter}
+              onChange={(event) => setter({ ...filters, startAfter: event.target.value })}
             />
           </label>
         </div>
@@ -164,9 +258,7 @@ function FilterPanel({
               </select>
             </label>
 
-            {advancedSection(stateFilters.characters, (value) =>
-              setStateFilters({ ...stateFilters, characters: value })
-            )}
+            {advancedSection(stateFilters, setStateFilters)}
           </div>
         )}
 
@@ -229,9 +321,7 @@ function FilterPanel({
               </select>
             </label>
 
-            {advancedSection(tournamentFilters.characters, (value) =>
-              setTournamentFilters({ ...tournamentFilters, characters: value })
-            )}
+            {advancedSection(tournamentFilters, setTournamentFilters)}
           </div>
         )}
       </div>
@@ -263,8 +353,13 @@ export default function DashboardPage() {
   const [stateFilters, setStateFilters] = useState<StateFilters>({
     region: "",
     timeframe: "3m",
-    game: "",
     characters: "",
+    minEntrants: "",
+    maxEntrants: "",
+    minMaxEventEntrants: "",
+    largeEventThreshold: "",
+    minLargeEventShare: "",
+    startAfter: "",
   });
   const [tournamentFilters, setTournamentFilters] = useState<TournamentFilters>({
     series: "",
@@ -272,6 +367,12 @@ export default function DashboardPage() {
     timeframe: "3m",
     game: "",
     characters: "",
+    minEntrants: "",
+    maxEntrants: "",
+    minMaxEventEntrants: "",
+    largeEventThreshold: "",
+    minLargeEventShare: "",
+    startAfter: "",
   });
 
   const handleApply = () => {
@@ -282,8 +383,30 @@ export default function DashboardPage() {
 
   const handleReset = () => {
     setViewType("state");
-    setStateFilters({ region: "", timeframe: "3m", game: "", characters: "" });
-    setTournamentFilters({ series: "", slugOrUrl: "", timeframe: "3m", game: "", characters: "" });
+    setStateFilters({
+      region: "",
+      timeframe: "3m",
+      characters: "",
+      minEntrants: "",
+      maxEntrants: "",
+      minMaxEventEntrants: "",
+      largeEventThreshold: "",
+      minLargeEventShare: "",
+      startAfter: "",
+    });
+    setTournamentFilters({
+      series: "",
+      slugOrUrl: "",
+      timeframe: "3m",
+      game: "",
+      characters: "",
+      minEntrants: "",
+      maxEntrants: "",
+      minMaxEventEntrants: "",
+      largeEventThreshold: "",
+      minLargeEventShare: "",
+      startAfter: "",
+    });
   };
 
   return (
