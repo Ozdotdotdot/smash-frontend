@@ -22,6 +22,7 @@ const PARTICLES_CONFIG = {
 
 export default function DashboardPage() {
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
+  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
@@ -42,11 +43,39 @@ export default function DashboardPage() {
       </div>
 
       <div className="relative z-10 flex min-h-screen">
-        <aside className="hidden w-72 shrink-0 flex-col gap-4 border-r border-white/10 bg-black/20 p-4 backdrop-blur md:flex">
-          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/60">
-            Filters
-          </div>
-          <div className="flex-1 rounded-lg border border-dashed border-white/15 bg-white/5" />
+        <aside
+          className={`relative hidden shrink-0 flex-col gap-4 border-r border-white/10 bg-black/20 p-4 backdrop-blur transition-all duration-200 md:flex ${
+            isDesktopCollapsed ? "w-12" : "w-72"
+          }`}
+        >
+          <button
+            type="button"
+            aria-label={isDesktopCollapsed ? "Expand filters" : "Collapse filters"}
+            onClick={() => setIsDesktopCollapsed((open) => !open)}
+            className="absolute -right-3 top-6 flex size-7 items-center justify-center rounded-full border border-white/15 bg-black/70 text-foreground shadow-lg shadow-black/30 backdrop-blur transition hover:bg-black/80"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={`size-4 transition-transform ${isDesktopCollapsed ? "rotate-180" : ""}`}
+            >
+              <path d="M14 6l-6 6 6 6" />
+            </svg>
+          </button>
+
+          {!isDesktopCollapsed && (
+            <>
+              <div className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/60">
+                Filters
+              </div>
+              <div className="flex-1 rounded-lg border border-dashed border-white/15 bg-white/5" />
+            </>
+          )}
         </aside>
 
         <div className="flex-1 p-4 md:p-8">
