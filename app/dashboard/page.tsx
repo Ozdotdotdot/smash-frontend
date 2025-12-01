@@ -700,7 +700,11 @@ export default function DashboardPage() {
     return params;
   };
 
-  const loadPrecomputedSeries = (params: URLSearchParams, allowRetry = true) => {
+  const loadPrecomputedSeries = (
+    params: URLSearchParams,
+    originAllowMulti: boolean,
+    allowRetry = true,
+  ) => {
     setIsLoading(true);
     setError(null);
     fetch(`/api/precomputed_series?${params.toString()}`, { cache: "no-store" })
@@ -708,8 +712,7 @@ export default function DashboardPage() {
         if (res.status === 412 && allowRetry && params.get("allow_multi") !== "true") {
           const retryParams = new URLSearchParams(params);
           retryParams.set("allow_multi", "true");
-          setAllowMultiSeries(true);
-          return loadPrecomputedSeries(retryParams, false);
+          return loadPrecomputedSeries(retryParams, originAllowMulti, false);
         }
         if (!res.ok) throw new Error(`API error ${res.status}`);
         return res.json();
@@ -721,18 +724,26 @@ export default function DashboardPage() {
           resolved_labels?: string[];
         }) => {
           const requestedSeriesKey = params.get("series_key");
-          const allowMulti = params.get("allow_multi") === "true";
+          const allowMultiParam = params.get("allow_multi") === "true";
           const hasSeriesList = json.series_keys && json.series_keys.length > 0;
 
-          if (!requestedSeriesKey && allowMulti && hasSeriesList) {
-            const labels = json.resolved_labels ?? [];
-            setSeriesOptions(
-              json.series_keys.map((key, idx) => ({
-                key,
-                label: labels[idx] ?? key,
-              })),
-            );
-            setChartData([]);
+          if (allowMultiParam) {
+            if (originAllowMulti) {
+              setSeriesOptions([]);
+              setChartData(json.results ?? []);
+            } else if (!requestedSeriesKey && hasSeriesList) {
+              const labels = json.resolved_labels ?? [];
+              setSeriesOptions(
+                json.series_keys.map((key, idx) => ({
+                  key,
+                  label: labels[idx] ?? key,
+                })),
+              );
+              setChartData([]);
+            } else {
+              setSeriesOptions([]);
+              setChartData(json.results ?? []);
+            }
             return;
           }
 
@@ -827,7 +838,7 @@ export default function DashboardPage() {
     // Otherwise fall back to precomputed series discovery.
     const params = buildTournamentQuery(undefined, allowMultiSeries);
     setSelectedSeriesKey(null);
-    loadPrecomputedSeries(params);
+    loadPrecomputedSeries(params, allowMultiSeries);
   };
 
   const handleReset = () => {
@@ -948,7 +959,7 @@ export default function DashboardPage() {
               selectedSeriesKey={selectedSeriesKey}
               onSelectSeries={(key) => {
                 setSelectedSeriesKey(key);
-                loadPrecomputedSeries(buildTournamentQuery(key, false));
+                loadPrecomputedSeries(buildTournamentQuery(key, false), false);
               }}
             />
           )}
@@ -1115,7 +1126,7 @@ export default function DashboardPage() {
           selectedSeriesKey={selectedSeriesKey}
           onSelectSeries={(key) => {
             setSelectedSeriesKey(key);
-            loadPrecomputedSeries(buildTournamentQuery(key, false));
+            loadPrecomputedSeries(buildTournamentQuery(key, false), false);
           }}
         />
       </aside>
