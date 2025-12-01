@@ -147,19 +147,6 @@ function FilterPanel({
             </label>
 
             <label className="flex flex-col gap-1 text-sm">
-              <span className="text-foreground/70">Game</span>
-              <input
-                type="text"
-                placeholder="e.g. Melee, Ultimate"
-                className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
-                value={stateFilters.game}
-                onChange={(event) =>
-                  setStateFilters({ ...stateFilters, game: event.target.value })
-                }
-              />
-            </label>
-
-            <label className="flex flex-col gap-1 text-sm">
               <span className="text-foreground/70">Timeframe</span>
               <select
                 className="rounded-md border border-white/20 bg-[#0E0F15] px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/30 focus:border-white/40"
