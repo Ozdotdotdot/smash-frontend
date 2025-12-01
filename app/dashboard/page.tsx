@@ -3,6 +3,11 @@
 import { useState } from "react";
 
 import Particles from "@/react-bits/src/content/Backgrounds/Particles/Particles";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/ui/apps/www/components/ui/tooltip";
 
 // ========================================
 // PARTICLES CONFIGURATION - Adjust these values as needed
@@ -80,6 +85,16 @@ function FilterPanel({
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
+  const labelWithTooltip = (label: string, tooltip: string) => (
+    <div className="flex items-center gap-2">
+      <span className="text-foreground/70">{label}</span>
+      <Tooltip>
+        <TooltipTrigger aria-label={`${label} details`}>?</TooltipTrigger>
+        <TooltipContent className="bg-white/95 text-black">{tooltip}</TooltipContent>
+      </Tooltip>
+    </div>
+  );
+
   const advancedSection = (
     filters:
       | StateFilters
@@ -101,7 +116,10 @@ function FilterPanel({
       {showAdvanced && (
         <div className="mt-3 space-y-3">
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-foreground/70">Character Filters</span>
+            {labelWithTooltip(
+              "Character Filters",
+              "Comma-separated characters to focus on (matches player mains or target character terms)."
+            )}
             <input
               type="text"
               placeholder="e.g. Falco, Sheik"
@@ -112,7 +130,10 @@ function FilterPanel({
           </label>
 
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-foreground/70">Min Entrants (avg)</span>
+            {labelWithTooltip(
+              "Min Entrants (avg)",
+              "Require players whose average event size meets or exceeds this entrant count."
+            )}
             <input
               type="number"
               min={0}
@@ -124,7 +145,10 @@ function FilterPanel({
           </label>
 
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-foreground/70">Max Entrants (avg)</span>
+            {labelWithTooltip(
+              "Max Entrants (avg)",
+              "Require players whose average event size is at or below this entrant count."
+            )}
             <input
               type="number"
               min={0}
@@ -136,7 +160,10 @@ function FilterPanel({
           </label>
 
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-foreground/70">Min Largest Event Entrants</span>
+            {labelWithTooltip(
+              "Min Largest Event Entrants",
+              "Keep players whose single biggest event had at least this many entrants."
+            )}
             <input
               type="number"
               min={0}
@@ -150,7 +177,10 @@ function FilterPanel({
           </label>
 
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-foreground/70">Large Event Threshold</span>
+            {labelWithTooltip(
+              "Large Event Threshold",
+              "Defines what entrant count qualifies as a large event for the share filter."
+            )}
             <input
               type="number"
               min={0}
@@ -164,7 +194,10 @@ function FilterPanel({
           </label>
 
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-foreground/70">Min Large Event Share</span>
+            {labelWithTooltip(
+              "Min Large Event Share",
+              "Require at least this fraction of a player's events to meet the large-event threshold (0-1)."
+            )}
             <input
               type="number"
               min={0}
@@ -180,7 +213,10 @@ function FilterPanel({
           </label>
 
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-foreground/70">Start After (YYYY-MM-DD)</span>
+            {labelWithTooltip(
+              "Start After",
+              "Drop players whose most recent event started before this date (YYYY-MM-DD)."
+            )}
             <input
               type="date"
               className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
