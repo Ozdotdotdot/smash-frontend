@@ -40,6 +40,7 @@ type StateFilters = {
 };
 
 type TournamentFilters = {
+  state: string;
   series: string;
   slugOrUrl: string;
   timeframe: string;
@@ -300,6 +301,19 @@ function FilterPanel({
         {viewType === "tournament" && (
           <div className="space-y-3">
             <label className="flex flex-col gap-1 text-sm">
+              <span className="text-foreground/70">State</span>
+              <input
+                type="text"
+                placeholder="e.g. Georgia"
+                className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
+                value={tournamentFilters.state}
+                onChange={(event) =>
+                  setTournamentFilters({ ...tournamentFilters, state: event.target.value })
+                }
+              />
+            </label>
+
+            <label className="flex flex-col gap-1 text-sm">
               <span className="text-foreground/70">Tournament Series (optional)</span>
               <input
                 type="text"
@@ -384,6 +398,7 @@ export default function DashboardPage() {
     startAfter: "",
   });
   const [tournamentFilters, setTournamentFilters] = useState<TournamentFilters>({
+    state: "",
     series: "",
     slugOrUrl: "",
     timeframe: "3m",
@@ -416,6 +431,7 @@ export default function DashboardPage() {
       startAfter: "",
     });
     setTournamentFilters({
+      state: "",
       series: "",
       slugOrUrl: "",
       timeframe: "3m",
