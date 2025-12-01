@@ -608,6 +608,15 @@ export default function DashboardPage() {
     () => TIMEFRAME_TO_MONTHS[stateFilters.timeframe] ?? 3,
     [stateFilters.timeframe],
   );
+  const chartPoints = useMemo(
+    () =>
+      chartData.filter(
+        (p) =>
+          Number.isFinite(p.weighted_win_rate) &&
+          Number.isFinite(p.opponent_strength),
+      ),
+    [chartData],
+  );
 
   const buildStateQuery = () => {
     const params = new URLSearchParams({
@@ -997,7 +1006,7 @@ export default function DashboardPage() {
                   No data yet. Apply filters to fetch state-wide metrics.
                 </div>
               )}
-              {chartData.length > 0 && (
+              {chartPoints.length > 0 && (
                 <>
                   <div className="h-[480px] rounded-lg border border-white/10 bg-black/40 p-3">
                     <ResponsiveContainer width="100%" height="100%">
@@ -1030,7 +1039,7 @@ export default function DashboardPage() {
                         />
                         <Scatter
                           name="Players"
-                          data={chartData}
+                          data={chartPoints}
                           fill="#4ade80"
                           fillOpacity={0.95}
                           stroke="rgba(0,0,0,0.35)"
@@ -1044,7 +1053,7 @@ export default function DashboardPage() {
                   <div className="mt-4 overflow-hidden rounded-lg border border-white/10 bg-black/30">
                     <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs uppercase tracking-[0.2em] text-foreground/60">
                       <span>Players</span>
-                      <span>{chartData.length} rows</span>
+                      <span>{chartPoints.length} rows</span>
                     </div>
                     <Table>
                       <TableHeader className="bg-white/5 text-sm font-medium">
@@ -1056,9 +1065,9 @@ export default function DashboardPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody className="text-sm">
-                        {chartData.map((row, idx) => (
+                        {chartPoints.map((row, idx) => (
                           <TableRow
-                            key={row.player_id ?? `${row.gamer_tag}-${idx}`}
+                            key={`${row.player_id ?? row.gamer_tag ?? "row"}-${idx}`}
                             className="border-b border-white/5 last:border-0"
                           >
                             <TableCell className="px-4 py-3 font-semibold">
@@ -1080,8 +1089,14 @@ export default function DashboardPage() {
                   </div>
                 </>
               )}
-            </div>
-          </div>
+                    </div>
+
+                    {chartData.length > chartPoints.length && (
+                      <div className="px-4 py-2 text-xs text-foreground/60">
+                        {chartData.length - chartPoints.length} row(s) skipped (missing win rate or opponent strength).
+                      </div>
+                    )}
+                  </div>
         </div>
       </div>
 
