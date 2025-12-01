@@ -105,7 +105,7 @@ function FilterPanel({
         <div className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/60">
           View
         </div>
-        <div className="inline-flex gap-2 rounded-full border border-white/10 bg-black/30 p-1 shadow-inner shadow-black/30">
+        <div className="flex w-full gap-2 rounded-full border border-white/10 bg-black/30 p-1 shadow-inner shadow-black/30">
           {VIEW_ITEMS.map((item) => {
             const isActive = viewType === item.value;
             return (
@@ -113,7 +113,7 @@ function FilterPanel({
                 key={item.value}
                 type="button"
                 onClick={() => setViewType(item.value)}
-                className={`rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition ${
+                className={`flex-1 rounded-full px-3 py-2 text-center text-xs font-semibold uppercase tracking-[0.12em] transition ${
                   isActive
                     ? "bg-white text-black shadow-md shadow-black/30"
                     : "text-foreground/70 hover:text-foreground hover:bg-white/10"
