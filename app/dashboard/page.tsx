@@ -765,10 +765,13 @@ export default function DashboardPage() {
 
           setSeriesOptions([]);
           setChartData(json.results ?? []);
+          if ((json.results ?? []).length === 0) {
+            setError("No data found. Check your state parameter and filters.");
+          }
         },
       )
       .catch((err) => {
-        setError((err as Error).message);
+        setError(`${(err as Error).message} — Perhaps check your state parameters and filters?`);
         setChartData([]);
         setSeriesOptions([]);
       })
@@ -776,22 +779,36 @@ export default function DashboardPage() {
   };
 
   const handleApply = () => {
+    if (viewType === "state" && !stateFilters.region.trim()) {
+      setError("Select a state to run the search.");
+      setChartData([]);
+      return;
+    }
+    if (viewType === "tournament" && !tournamentFilters.state.trim()) {
+      setError("Select a state to run the search.");
+      setChartData([]);
+      return;
+    }
+
     if (viewType === "state") {
       const params = buildStateQuery();
       setIsLoading(true);
       setError(null);
-      fetch(`/api/precomputed?${params.toString()}`, { cache: "no-store" })
-        .then((res) => {
-          if (!res.ok) throw new Error(`API error ${res.status}`);
-          return res.json();
-        })
-        .then((json: { results?: PlayerPoint[] }) => {
-          setChartData(json.results ?? []);
-        })
-        .catch((err) => {
-          setError((err as Error).message);
-          setChartData([]);
-        })
+    fetch(`/api/precomputed?${params.toString()}`, { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) throw new Error(`API error ${res.status}`);
+        return res.json();
+      })
+      .then((json: { results?: PlayerPoint[] }) => {
+        setChartData(json.results ?? []);
+        if ((json.results ?? []).length === 0) {
+          setError("No data found. Check your state parameter and filters.");
+        }
+      })
+      .catch((err) => {
+        setError(`${(err as Error).message} — check your state parameter and filters.`);
+        setChartData([]);
+      })
         .finally(() => setIsLoading(false));
       return;
     }
@@ -835,18 +852,21 @@ export default function DashboardPage() {
       setSelectedSeriesKey(null);
       setIsLoading(true);
       setError(null);
-      fetch(`/api/search?${params.toString()}`, { cache: "no-store" })
-        .then((res) => {
-          if (!res.ok) throw new Error(`API error ${res.status}`);
-          return res.json();
-        })
-        .then((json: { results?: PlayerPoint[] }) => {
-          setChartData(json.results ?? []);
-        })
-        .catch((err) => {
-          setError((err as Error).message);
-          setChartData([]);
-        })
+    fetch(`/api/search?${params.toString()}`, { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) throw new Error(`API error ${res.status}`);
+        return res.json();
+      })
+      .then((json: { results?: PlayerPoint[] }) => {
+        setChartData(json.results ?? []);
+        if ((json.results ?? []).length === 0) {
+          setError("No data found. Check your state parameter and filters.");
+        }
+      })
+      .catch((err) => {
+        setError(`${(err as Error).message} — check your state parameter and filters.`);
+        setChartData([]);
+      })
         .finally(() => setIsLoading(false));
       return;
     }
