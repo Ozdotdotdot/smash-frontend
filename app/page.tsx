@@ -78,7 +78,7 @@ export default function Home() {
     {
       id: "ga-default",
       label: "GA sample",
-      api: `/api/precomputed?state=GA&months_back=3&limit=0&filter_state=GA`,
+      api: `/api/precomputed?state=GA&months_back=3&limit=0&filter_state=GA&min_entrants=32`,
     },
   ];
   const [selectedSourceId, setSelectedSourceId] = useState(dataSources[0]?.id ?? "port-priority-9");
