@@ -41,6 +41,7 @@ type StateFilters = {
   region: string;
   timeframe: string;
   characters: string;
+  filterStates: string;
   minEntrants: string;
   maxEntrants: string;
   minMaxEventEntrants: string;
@@ -55,6 +56,7 @@ type TournamentFilters = {
   slugOrUrl: string;
   timeframe: string;
   characters: string;
+  filterStates: string;
   minEntrants: string;
   maxEntrants: string;
   minMaxEventEntrants: string;
@@ -120,10 +122,8 @@ function FilterPanel({
   );
 
   const advancedSection = (
-    filters:
-      | StateFilters
-      | TournamentFilters,
-    setter: (value: any) => void
+    filters: StateFilters | TournamentFilters,
+    setter: (value: any) => void,
   ) => (
     <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-3">
       <button
@@ -139,6 +139,22 @@ function FilterPanel({
       </button>
       {showAdvanced && (
         <div className="mt-3 space-y-3">
+          <label className="flex flex-col gap-1 text-sm">
+            {labelWithTooltip(
+              "Filter State(s)",
+              "Comma-separated list of state codes to keep (e.g., GA, FL).",
+            )}
+            <input
+              type="text"
+              placeholder="e.g. GA, FL"
+              className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
+              value={filters.filterStates}
+              onChange={(event) =>
+                setter({ ...filters, filterStates: event.target.value })
+              }
+            />
+          </label>
+
           <label className="flex flex-col gap-1 text-sm">
             {labelWithTooltip(
               "Character Filters",
@@ -414,6 +430,7 @@ export default function DashboardPage() {
     region: "",
     timeframe: "3m",
     characters: "",
+    filterStates: "",
     minEntrants: "",
     maxEntrants: "",
     minMaxEventEntrants: "",
@@ -427,6 +444,7 @@ export default function DashboardPage() {
     slugOrUrl: "",
     timeframe: "3m",
     characters: "",
+    filterStates: "",
     minEntrants: "",
     maxEntrants: "",
     minMaxEventEntrants: "",
@@ -462,7 +480,13 @@ export default function DashboardPage() {
     maybeSet("large_event_threshold", stateFilters.largeEventThreshold);
     maybeSet("min_large_event_share", stateFilters.minLargeEventShare);
     if (stateFilters.startAfter) params.set("start_after", stateFilters.startAfter);
-    if (stateFilters.region.trim()) {
+    if (stateFilters.filterStates.trim()) {
+      stateFilters.filterStates
+        .split(",")
+        .map((s) => s.trim().toUpperCase())
+        .filter(Boolean)
+        .forEach((code) => params.append("filter_state", code));
+    } else if (stateFilters.region.trim()) {
       params.set("filter_state", stateFilters.region.trim().toUpperCase());
     }
     return params;
@@ -499,7 +523,13 @@ export default function DashboardPage() {
     if (tournamentFilters.series.trim()) {
       params.set("tournament_contains", tournamentFilters.series.trim());
     }
-    if (tournamentFilters.state.trim()) {
+    if (tournamentFilters.filterStates.trim()) {
+      tournamentFilters.filterStates
+        .split(",")
+        .map((s) => s.trim().toUpperCase())
+        .filter(Boolean)
+        .forEach((code) => params.append("filter_state", code));
+    } else if (tournamentFilters.state.trim()) {
       params.set("filter_state", tournamentFilters.state.trim().toUpperCase());
     }
     const maybeSet = (key: string, val: string) => {
@@ -556,8 +586,12 @@ export default function DashboardPage() {
         limit: "0",
       });
       params.append("tournament_slug", slug);
-      if (tournamentFilters.state.trim()) {
-        params.set("filter_state", tournamentFilters.state.trim().toUpperCase());
+      if (tournamentFilters.filterStates.trim()) {
+        tournamentFilters.filterStates
+          .split(",")
+          .map((s) => s.trim().toUpperCase())
+          .filter(Boolean)
+          .forEach((code) => params.append("filter_state", code));
       }
       maybeSet(params, "character", tournamentFilters.characters);
       maybeSet(params, "min_entrants", tournamentFilters.minEntrants);
@@ -610,6 +644,7 @@ export default function DashboardPage() {
       region: "",
       timeframe: "3m",
       characters: "",
+      filterStates: "",
       minEntrants: "",
       maxEntrants: "",
       minMaxEventEntrants: "",
@@ -623,6 +658,7 @@ export default function DashboardPage() {
       slugOrUrl: "",
       timeframe: "3m",
       characters: "",
+      filterStates: "",
       minEntrants: "",
       maxEntrants: "",
       minMaxEventEntrants: "",
