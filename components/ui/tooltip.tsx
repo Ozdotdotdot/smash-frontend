@@ -87,6 +87,7 @@ function TooltipContent({
     transform: string
   } | null>(null)
   const [portalEl, setPortalEl] = React.useState<HTMLElement | null>(null)
+  const arrowSize = 10
 
   React.useLayoutEffect(() => {
     if (typeof document === "undefined") return
@@ -159,6 +160,47 @@ function TooltipContent({
 
   if (!ctx?.open || !position || !portalEl) return null
 
+  const arrowStyle = (() => {
+    const base = {
+      width: `${arrowSize}px`,
+      height: `${arrowSize}px`,
+      background: "#08090C",
+      border: "2px solid #959ca6",
+    } as const
+
+    switch (side) {
+      case "left":
+        return {
+          ...base,
+          left: "100%",
+          top: "50%",
+          transform: "translate(50%, -50%) rotate(45deg)",
+        }
+      case "top":
+        return {
+          ...base,
+          left: "50%",
+          top: "100%",
+          transform: "translate(-50%, 50%) rotate(45deg)",
+        }
+      case "bottom":
+        return {
+          ...base,
+          left: "50%",
+          top: "0%",
+          transform: "translate(-50%, -50%) rotate(45deg)",
+        }
+      case "right":
+      default:
+        return {
+          ...base,
+          left: "0%",
+          top: "50%",
+          transform: "translate(-50%, -50%) rotate(45deg)",
+        }
+    }
+  })()
+
   return createPortal(
     <div
       data-slot="tooltip-content"
@@ -175,6 +217,7 @@ function TooltipContent({
         transform: position.transform,
       }}
     >
+      <span aria-hidden className="absolute block" style={arrowStyle} />
       {children}
     </div>,
     portalEl
