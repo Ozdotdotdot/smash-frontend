@@ -354,29 +354,11 @@ function FilterPanel({
             )}
             <input
               type="date"
-              className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
+              className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus-border-white/40"
               value={filters.startAfter}
               onChange={(event) => setter({ ...filters, startAfter: event.target.value })}
             />
           </label>
-
-          <div className="flex items-center justify-between rounded-md border border-white/10 bg-black/30 px-3 py-2 text-sm">
-            <div className="flex flex-col">
-              <span className="font-semibold text-foreground">Hide outliers</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setHideOutliers(!hideOutliers)}
-              aria-pressed={hideOutliers}
-              className="rounded-md border border-white/10 bg-black/50 p-2 text-foreground transition hover:border-white/20 hover:text-white"
-            >
-              {hideOutliers ? (
-                <SquareCheckIcon className="h-4 w-4" />
-              ) : (
-                <SquareIcon className="h-4 w-4" />
-              )}
-            </button>
-          </div>
         </div>
       )}
     </div>
@@ -429,25 +411,44 @@ function FilterPanel({
               />
             </label>
 
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-foreground/70">Timeframe</span>
-              <select
-                className="rounded-md border border-white/20 bg-[#0E0F15] px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/30 focus:border-white/40"
-                style={{ backgroundColor: "#0E0F15" }}
-                value={stateFilters.timeframe}
-                onChange={(event) =>
-                  setStateFilters({ ...stateFilters, timeframe: event.target.value })
-                }
-              >
-                {TIMEFRAME_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-foreground/70">Timeframe</span>
+            <select
+              className="rounded-md border border-white/20 bg-[#0E0F15] px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/30 focus:border-white/40"
+              style={{ backgroundColor: "#0E0F15" }}
+              value={stateFilters.timeframe}
+              onChange={(event) =>
+                setStateFilters({ ...stateFilters, timeframe: event.target.value })
+              }
+            >
+              {TIMEFRAME_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-            {advancedSection(stateFilters, setStateFilters, hideOutliers, setHideOutliers)}
+          <div className="flex items-center justify-between rounded-md border border-white/10 bg-black/30 px-3 py-2 text-sm">
+            <div className="flex flex-col">
+              <span className="font-semibold text-foreground">Hide outliers</span>
+              <span className="text-[11px] text-foreground/60">Suppress far-right strength tail.</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setHideOutliers(!hideOutliers)}
+              aria-pressed={hideOutliers}
+              className="rounded-md border border-white/10 bg-black/50 p-2 text-foreground transition hover:border-white/20 hover:text-white"
+            >
+              {hideOutliers ? (
+                <SquareCheckIcon className="h-4 w-4" />
+              ) : (
+                <SquareIcon className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+
+          {advancedSection(stateFilters, setStateFilters, hideOutliers, setHideOutliers)}
 
             <div className="flex gap-2">
               <button
@@ -524,25 +525,44 @@ function FilterPanel({
               />
             </label>
 
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-foreground/70">Timeframe</span>
-              <select
-                className="rounded-md border border-white/20 bg-[#0E0F15] px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/30 focus:border-white/40"
-                style={{ backgroundColor: "#0E0F15" }}
-                value={tournamentFilters.timeframe}
-                onChange={(event) =>
-                  setTournamentFilters({ ...tournamentFilters, timeframe: event.target.value })
-                }
-              >
-                {TIMEFRAME_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-foreground/70">Timeframe</span>
+            <select
+              className="rounded-md border border-white/20 bg-[#0E0F15] px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/30 focus:border-white/40"
+              style={{ backgroundColor: "#0E0F15" }}
+              value={tournamentFilters.timeframe}
+              onChange={(event) =>
+                setTournamentFilters({ ...tournamentFilters, timeframe: event.target.value })
+              }
+            >
+              {TIMEFRAME_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-            {advancedSection(tournamentFilters, setTournamentFilters, hideOutliers, setHideOutliers)}
+          <div className="flex items-center justify-between rounded-md border border-white/10 bg-black/30 px-3 py-2 text-sm">
+            <div className="flex flex-col">
+              <span className="font-semibold text-foreground">Hide outliers</span>
+              <span className="text-[11px] text-foreground/60">Suppress far-right strength tail.</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setHideOutliers(!hideOutliers)}
+              aria-pressed={hideOutliers}
+              className="rounded-md border border-white/10 bg-black/50 p-2 text-foreground transition hover-border-white/20 hover:text-white"
+            >
+              {hideOutliers ? (
+                <SquareCheckIcon className="h-4 w-4" />
+              ) : (
+                <SquareIcon className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+
+          {advancedSection(tournamentFilters, setTournamentFilters, hideOutliers, setHideOutliers)}
 
             {seriesOptions.length > 0 && (
               <div className="space-y-2 rounded-md border border-white/10 bg-black/20 p-3">
