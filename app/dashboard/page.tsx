@@ -217,7 +217,10 @@ function FilterPanel({
           >
             <Info className="h-4 w-4" />
           </TooltipTrigger>
-          <TooltipContent side="right" className="bg-white/95 text-black">
+          <TooltipContent
+            side="right"
+            className="border-2 border-[#1E2129] bg-[#08090C] text-white shadow-black/50"
+          >
             {tooltip}
           </TooltipContent>
         </Tooltip>

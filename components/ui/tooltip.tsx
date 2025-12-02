@@ -163,7 +163,7 @@ function TooltipContent({
     <div
       data-slot="tooltip-content"
       className={cn(
-        "bg-foreground text-background rounded-md px-3 py-2 text-xs leading-relaxed shadow-lg shadow-black/40 pointer-events-none text-left",
+        "pointer-events-none text-left rounded-md border-2 border-[#959ca6] bg-[#08090C] px-3 py-2 text-xs leading-relaxed text-white shadow-lg shadow-black/40",
         "absolute animate-in fade-in-0 zoom-in-95",
         className
       )}
