@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Info } from "lucide-react";
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -13,7 +14,12 @@ import {
 } from "recharts";
 
 import Particles from "@/components/Particles";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -203,10 +209,19 @@ function FilterPanel({
   const labelWithTooltip = (label: string, tooltip: string) => (
     <div className="flex items-center gap-2">
       <span className="text-foreground/70">{label}</span>
-      <Tooltip>
-        <TooltipTrigger aria-label={`${label} details`}>?</TooltipTrigger>
-        <TooltipContent className="bg-white/95 text-black">{tooltip}</TooltipContent>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger
+            aria-label={`${label} details`}
+            className="flex size-7 items-center justify-center rounded-full border border-white/15 bg-black/50 text-foreground/80 shadow-sm shadow-black/30 transition hover:border-white/30 hover:bg-black/70 hover:text-foreground"
+          >
+            <Info className="h-4 w-4" />
+          </TooltipTrigger>
+          <TooltipContent side="right" className="bg-white/95 text-black">
+            {tooltip}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 

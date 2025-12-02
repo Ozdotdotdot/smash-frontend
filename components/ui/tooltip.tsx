@@ -72,14 +72,20 @@ function TooltipTrigger({
   )
 }
 
+type TooltipSide = "top" | "right" | "bottom" | "left"
+
 function TooltipContent({
   children,
   className,
-}: React.HTMLAttributes<HTMLDivElement>) {
+  side = "right",
+  offset = 8,
+}: React.HTMLAttributes<HTMLDivElement> & { side?: TooltipSide; offset?: number }) {
   const ctx = React.useContext(TooltipContext)
-  const [position, setPosition] = React.useState<{ top: number; left: number } | null>(
-    null
-  )
+  const [position, setPosition] = React.useState<{
+    top: number
+    left: number
+    transform: string
+  } | null>(null)
   const [portalEl, setPortalEl] = React.useState<HTMLElement | null>(null)
 
   React.useLayoutEffect(() => {
@@ -106,10 +112,40 @@ function TooltipContent({
       const el = ctx.triggerRef.current
       if (!el) return
       const rect = el.getBoundingClientRect()
-      setPosition({
-        top: rect.top + rect.height / 2,
-        left: rect.right + 8,
-      })
+      const centerY = rect.top + rect.height / 2
+      const centerX = rect.left + rect.width / 2
+
+      const next = (() => {
+        switch (side) {
+          case "left":
+            return {
+              top: centerY,
+              left: rect.left - offset,
+              transform: "translate(-100%, -50%)",
+            }
+          case "top":
+            return {
+              top: rect.top - offset,
+              left: centerX,
+              transform: "translate(-50%, -100%)",
+            }
+          case "bottom":
+            return {
+              top: rect.bottom + offset,
+              left: centerX,
+              transform: "translate(-50%, 0)",
+            }
+          case "right":
+          default:
+            return {
+              top: centerY,
+              left: rect.right + offset,
+              transform: "translate(0, -50%)",
+            }
+        }
+      })()
+
+      setPosition(next)
     }
 
     updatePosition()
@@ -119,7 +155,7 @@ function TooltipContent({
       window.removeEventListener("resize", updatePosition)
       window.removeEventListener("scroll", updatePosition, true)
     }
-  }, [ctx?.open, ctx?.triggerRef])
+  }, [ctx?.open, ctx?.triggerRef, offset, side])
 
   if (!ctx?.open || !position || !portalEl) return null
 
@@ -128,7 +164,7 @@ function TooltipContent({
       data-slot="tooltip-content"
       className={cn(
         "bg-foreground text-background rounded-md px-3 py-2 text-xs leading-relaxed shadow-lg shadow-black/40 pointer-events-none text-left",
-        "absolute -translate-y-1/2 animate-in fade-in-0 zoom-in-95",
+        "absolute animate-in fade-in-0 zoom-in-95",
         className
       )}
       role="tooltip"
@@ -136,6 +172,7 @@ function TooltipContent({
         whiteSpace: "nowrap",
         top: position.top,
         left: position.left,
+        transform: position.transform,
       }}
     >
       {children}
