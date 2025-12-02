@@ -213,7 +213,7 @@ function FilterPanel({
         <Tooltip>
           <TooltipTrigger
             aria-label={`${label} details`}
-            className="flex size-7 items-center justify-center rounded-full border border-white/15 bg-black/50 text-foreground/80 shadow-sm shadow-black/30 transition hover:border-white/30 hover:bg-black/70 hover:text-foreground"
+            className="flex items-center justify-center text-foreground/80 transition hover:text-foreground"
           >
             <Info className="h-4 w-4" />
           </TooltipTrigger>
