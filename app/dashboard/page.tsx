@@ -241,7 +241,7 @@ function FilterPanel({
             )}
             <input
               type="text"
-              placeholder="e.g. GA, FL"
+              placeholder="GA, FL"
               className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
               value={filters.filterStates}
               onChange={(event) =>
@@ -257,7 +257,7 @@ function FilterPanel({
             )}
             <input
               type="text"
-              placeholder="e.g. Falco, Sheik"
+              placeholder="Falco, Sheik"
               className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
               value={filters.characters}
               onChange={(event) => setter({ ...filters, characters: event.target.value })}
@@ -272,7 +272,7 @@ function FilterPanel({
             <input
               type="number"
               min={0}
-              placeholder="e.g. 32"
+              placeholder="32"
               className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
               value={filters.minEntrants}
               onChange={(event) => setter({ ...filters, minEntrants: event.target.value })}
@@ -287,7 +287,7 @@ function FilterPanel({
             <input
               type="number"
               min={0}
-              placeholder="e.g. 128"
+              placeholder="128"
               className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
               value={filters.maxEntrants}
               onChange={(event) => setter({ ...filters, maxEntrants: event.target.value })}
@@ -302,7 +302,7 @@ function FilterPanel({
             <input
               type="number"
               min={0}
-              placeholder="e.g. 64"
+              placeholder="64"
               className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
               value={filters.minMaxEventEntrants}
               onChange={(event) =>
@@ -319,7 +319,7 @@ function FilterPanel({
             <input
               type="number"
               min={0}
-              placeholder="e.g. 32"
+              placeholder="32"
               className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
               value={filters.largeEventThreshold}
               onChange={(event) =>
@@ -338,7 +338,7 @@ function FilterPanel({
               min={0}
               max={1}
               step="0.01"
-              placeholder="e.g. 0.33"
+              placeholder="0.33"
               className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
               value={filters.minLargeEventShare}
               onChange={(event) =>
@@ -402,7 +402,7 @@ function FilterPanel({
               <span className="text-foreground/70">State</span>
               <input
                 type="text"
-                placeholder="e.g. Georgia"
+                placeholder="GA"
                 className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
                 value={stateFilters.region}
                 onChange={(event) =>
@@ -475,7 +475,7 @@ function FilterPanel({
               <span className="text-foreground/70">State</span>
               <input
                 type="text"
-                placeholder="e.g. Georgia"
+                placeholder="GA"
                 className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
                 value={tournamentFilters.state}
                 onChange={(event) =>
@@ -488,7 +488,7 @@ function FilterPanel({
               <span className="text-foreground/70">Tournament Series (optional)</span>
               <input
                 type="text"
-                placeholder="e.g. 4o4 Weeklies"
+                placeholder="4o4, Guildhouse"
                 className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus-border-white/40"
                 value={tournamentFilters.series}
                 onChange={(event) =>
