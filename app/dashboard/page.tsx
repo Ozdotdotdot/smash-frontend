@@ -12,12 +12,8 @@ import {
   YAxis,
 } from "recharts";
 
-import Particles from "@/react-bits/src/content/Backgrounds/Particles/Particles";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/ui/apps/www/components/ui/tooltip";
+import Particles from "@/components/Particles";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -25,7 +21,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/ui/apps/www/components/ui/table";
+} from "@/components/ui/table";
 
 function ToggleLeftIcon({ className }: { className?: string }) {
   return (
