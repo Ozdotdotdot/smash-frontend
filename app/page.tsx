@@ -197,6 +197,14 @@ export default function Home() {
     return () => controller.abort();
   }, [apiUrl, mainVisible]);
 
+  const [navStuck, setNavStuck] = useState(false);
+  useEffect(() => {
+    const handleStick = () => setNavStuck(window.scrollY > 4);
+    handleStick();
+    window.addEventListener("scroll", handleStick);
+    return () => window.removeEventListener("scroll", handleStick);
+  }, []);
+
   return (
     <div className="relative min-h-screen bg-background text-foreground">
       <div
@@ -225,7 +233,15 @@ export default function Home() {
         className={`page-shell ${mainVisible ? "page-shell--visible" : ""}`}
         aria-hidden={!mainVisible}
       >
-        <nav className={`site-nav ${mainVisible ? "site-nav--visible" : ""}`}>
+        <nav
+          className={[
+            "site-nav",
+            mainVisible ? "site-nav--visible" : "",
+            navStuck ? "site-nav--stuck" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
           <div className="site-nav__inner">
             <Link
               href="/"
