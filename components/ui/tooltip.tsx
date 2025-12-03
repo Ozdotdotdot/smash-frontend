@@ -211,7 +211,10 @@ function TooltipContent({
       )}
       role="tooltip"
       style={{
-        whiteSpace: "nowrap",
+        whiteSpace: "normal",
+        wordBreak: "break-word",
+        overflowWrap: "break-word",
+        maxWidth: "min(260px, 80vw)",
         top: position.top,
         left: position.left,
         transform: position.transform,
