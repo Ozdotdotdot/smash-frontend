@@ -327,14 +327,6 @@ export default function Home() {
                 <a className="btn btn--ghost" href="#visualization">
                   Jump to example chart
                 </a>
-                <a
-                  className="btn btn--ghost"
-                  href="https://github.com/ozdotdotdot/smashDA"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  View on GitHub
-                </a>
               </div>
               <p className="text-xs uppercase tracking-[0.2em] text-foreground/55">
                 v0.1 – precomputed US state data (~3 months) via API and notebooks.
