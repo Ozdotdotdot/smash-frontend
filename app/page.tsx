@@ -66,9 +66,9 @@ export default function Home() {
   const [frameIndex, setFrameIndex] = useState(0);
   const dataSources: DataSource[] = [
     {
-      id: "port-priority-9",
-      label: "Port Priority 9",
-      api: `/api/precomputed_series?state=WA&months_back=3&limit=0&series_key=port-priority-9`,
+      id: "ny-featured",
+      label: "NY",
+      api: `/api/precomputed?state=NY&months_back=3&limit=0&filter_state=NY&min_entrants=32`,
     },
     {
       id: "ga-4o4",
@@ -77,11 +77,11 @@ export default function Home() {
     },
     {
       id: "ga-default",
-      label: "GA sample",
+      label: "GA",
       api: `/api/precomputed?state=GA&months_back=3&limit=0&filter_state=GA&min_entrants=32`,
     },
   ];
-  const [selectedSourceId, setSelectedSourceId] = useState(dataSources[0]?.id ?? "port-priority-9");
+  const [selectedSourceId, setSelectedSourceId] = useState(dataSources[0]?.id ?? "ny-featured");
   const [players, setPlayers] = useState<PlayerPoint[]>([]);
   const [hideOutliers, setHideOutliers] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
