@@ -1223,52 +1223,53 @@ export default function DashboardPage() {
       </div>
 
       <div
-        className={`fixed inset-0 z-20 bg-black/60 backdrop-blur-sm transition-opacity duration-200 md:hidden ${
+        className={`fixed inset-0 z-30 flex items-start overflow-y-auto bg-black/60 backdrop-blur-sm transition-opacity duration-200 md:hidden ${
           isMobilePanelOpen ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
         onClick={() => setIsMobilePanelOpen(false)}
-      />
-
-      <aside
-        id="mobile-filter-panel"
-        className={`fixed inset-y-0 left-0 z-30 flex w-72 flex-col gap-4 border-r border-white/10 bg-black/90 p-4 backdrop-blur transition-transform duration-200 md:hidden ${
-          isMobilePanelOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
       >
-        <div className="flex items-center justify-between">
-          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/60">
-            Filters
+        <aside
+          id="mobile-filter-panel"
+          className={`relative left-0 z-40 flex w-72 min-h-full flex-col gap-4 overflow-y-auto border-r border-white/10 bg-black/90 p-4 pb-16 backdrop-blur transition-transform duration-200 ${
+            isMobilePanelOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between">
+            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/60">
+              Filters
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsMobilePanelOpen(false)}
+              className="rounded-md border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-foreground transition hover:bg-white/15"
+            >
+              Close
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setIsMobilePanelOpen(false)}
-            className="rounded-md border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-foreground transition hover:bg-white/15"
-          >
-            Close
-          </button>
-        </div>
 
-        <FilterPanel
-          viewType={viewType}
-          setViewType={setViewType}
-          stateFilters={stateFilters}
-          setStateFilters={setStateFilters}
-          tournamentFilters={tournamentFilters}
-          setTournamentFilters={setTournamentFilters}
-          onApply={handleApply}
-          onReset={handleReset}
-          allowMultiSeries={allowMultiSeries}
-          setAllowMultiSeries={setAllowMultiSeries}
-          seriesOptions={seriesOptions}
-          selectedSeriesKey={selectedSeriesKey}
-          onSelectSeries={(key) => {
-            setSelectedSeriesKey(key);
-            loadPrecomputedSeries(buildTournamentQuery(key, false), false);
-          }}
-          hideOutliers={hideOutliers}
-          setHideOutliers={setHideOutliers}
-        />
-      </aside>
+          <FilterPanel
+            viewType={viewType}
+            setViewType={setViewType}
+            stateFilters={stateFilters}
+            setStateFilters={setStateFilters}
+            tournamentFilters={tournamentFilters}
+            setTournamentFilters={setTournamentFilters}
+            onApply={handleApply}
+            onReset={handleReset}
+            allowMultiSeries={allowMultiSeries}
+            setAllowMultiSeries={setAllowMultiSeries}
+            seriesOptions={seriesOptions}
+            selectedSeriesKey={selectedSeriesKey}
+            onSelectSeries={(key) => {
+              setSelectedSeriesKey(key);
+              loadPrecomputedSeries(buildTournamentQuery(key, false), false);
+            }}
+            hideOutliers={hideOutliers}
+            setHideOutliers={setHideOutliers}
+          />
+        </aside>
+      </div>
     </div>
   );
 }
