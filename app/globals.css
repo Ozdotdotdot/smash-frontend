@@ -102,7 +102,7 @@ body {
 .site-nav__links {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 2.2rem;
 }
 
 .site-nav__links--desktop {
@@ -119,21 +119,17 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.55rem 0.95rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--foreground) 16%, transparent);
-  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  padding: 0.35rem 0;
   color: var(--foreground);
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   text-decoration: none;
-  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+  transition: color 140ms ease;
 }
 
 .site-nav__link:hover {
-  transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--foreground) 32%, transparent);
-  background: color-mix(in srgb, var(--foreground) 12%, transparent);
+  color: color-mix(in srgb, var(--foreground) 90%, transparent);
+  text-decoration: underline;
 }
 
 .site-nav__cta {
