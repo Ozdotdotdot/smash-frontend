@@ -910,6 +910,7 @@ export default function DashboardPage() {
     const maybeSet = (params: URLSearchParams, key: string, val: string) => {
       if (val.trim().length > 0) params.set(key, val.trim());
     };
+    const DEFAULT_VIDEOGAME_ID = "1386";
 
     // If a specific tournament slug/URL is provided, hit the search endpoint for that exact slug.
     if (slug) {
@@ -917,6 +918,7 @@ export default function DashboardPage() {
         state: tournamentFilters.state.trim().toUpperCase(),
         months_back: String(monthsBack),
         limit: "0",
+        videogame_id: DEFAULT_VIDEOGAME_ID,
       });
       params.append("tournament_slug", slug);
       if (tournamentFilters.filterStates.trim()) {
@@ -938,7 +940,7 @@ export default function DashboardPage() {
       setSelectedSeriesKey(null);
       setIsLoading(true);
       setError(null);
-    fetch(`/api/search?${params.toString()}`, { cache: "no-store" })
+    fetch(`/api/search/by-slug?${params.toString()}`, { cache: "no-store" })
       .then((res) => {
         if (!res.ok) throw new Error(`API error ${res.status}`);
         return res.json();
