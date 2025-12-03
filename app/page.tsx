@@ -64,6 +64,7 @@ export default function Home() {
   const [phase, setPhase] = useState<SplashPhase>("full");
   const frames = ["smash.watch", "smas.wtch", "sma.wch", "ss.wh", "s.w"];
   const [frameIndex, setFrameIndex] = useState(0);
+  const [navOpen, setNavOpen] = useState(false);
   const dataSources: DataSource[] = [
     {
       id: "ny-featured",
@@ -216,6 +217,64 @@ export default function Home() {
         className={`page-shell ${mainVisible ? "page-shell--visible" : ""}`}
         aria-hidden={!mainVisible}
       >
+        <nav className={`site-nav ${mainVisible ? "site-nav--visible" : ""}`}>
+          <div className="site-nav__inner">
+            <Link
+              href="/"
+              className="site-nav__brand"
+              onClick={() => setNavOpen(false)}
+            >
+              <span className="site-nav__wordmark">s.w</span>
+            </Link>
+            <button
+              className="site-nav__toggle"
+              type="button"
+              aria-expanded={navOpen}
+              aria-label="Toggle navigation"
+              onClick={() => setNavOpen((v) => !v)}
+            >
+              <span className="site-nav__toggle-line" />
+              <span className="site-nav__toggle-line" />
+            </button>
+            <div className={`site-nav__links ${navOpen ? "site-nav__links--open" : ""}`}>
+              <Link
+                href="/dashboard"
+                className="site-nav__link"
+                onClick={() => setNavOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/dotplot"
+                className="site-nav__link"
+                onClick={() => setNavOpen(false)}
+              >
+                Docs / reading
+              </Link>
+              <a
+                className="site-nav__cta"
+                href="https://github.com/ozdotdotdot/smashDA"
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => setNavOpen(false)}
+              >
+                <svg
+                  aria-hidden
+                  className="site-nav__star"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 3.5 14.9 9l5.6.8-4 3.9.9 5.6L12 16.7 6.6 19.3l.9-5.6-4-3.9L9 9l3-5.5Z" />
+                </svg>
+                Star on GitHub
+              </a>
+            </div>
+          </div>
+        </nav>
         <header className="flex w-full flex-col gap-6">
           <div className="text-base font-semibold uppercase tracking-[0.3em] text-white">
             s.w
