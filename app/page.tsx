@@ -12,6 +12,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import LetterSwapForward from "@/components/fancy/text/letter-swap-forward-anim";
 
 type SplashPhase = "full" | "compact" | "hidden";
 
@@ -253,10 +254,10 @@ export default function Home() {
             </Link>
             <div className="site-nav__links site-nav__links--desktop">
               <Link href="/dashboard" className="site-nav__link">
-                Dashboard
+                <LetterSwapForward label="Dashboard" staggerDuration={0} />
               </Link>
               <Link href="/dotplot" className="site-nav__link">
-                Docs / reading
+                <LetterSwapForward label="Docs / reading" staggerDuration={0} />
               </Link>
             </div>
             <a
@@ -298,10 +299,10 @@ export default function Home() {
           >
             <div className="site-nav__links site-nav__links--mobile">
               <Link href="/dashboard" className="site-nav__link" onClick={() => setNavOpen(false)}>
-                Dashboard
+                <LetterSwapForward label="Dashboard" staggerDuration={0} />
               </Link>
               <Link href="/dotplot" className="site-nav__link" onClick={() => setNavOpen(false)}>
-                Docs / reading
+                <LetterSwapForward label="Docs / reading" staggerDuration={0} />
               </Link>
             </div>
             <a

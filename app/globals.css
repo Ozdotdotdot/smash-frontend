@@ -129,7 +129,6 @@ body {
 
 .site-nav__link:hover {
   color: color-mix(in srgb, var(--foreground) 90%, transparent);
-  text-decoration: underline;
 }
 
 .site-nav__cta {
