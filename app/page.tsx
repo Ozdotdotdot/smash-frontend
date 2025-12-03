@@ -276,9 +276,6 @@ export default function Home() {
           </div>
         </nav>
         <header className="flex w-full flex-col gap-6">
-          <div className="text-base font-semibold uppercase tracking-[0.3em] text-white">
-            s.w
-          </div>
           <div className="hero-banner">
             <div className="hero-inner space-y-4">
               <h1 className="max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
