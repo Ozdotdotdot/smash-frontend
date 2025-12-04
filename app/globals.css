@@ -583,6 +583,51 @@ body {
   position: relative;
 }
 
+.info-card {
+  border-radius: 16px;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  min-height: 150px;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.info-card__title {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.info-card__summary {
+  color: color-mix(in srgb, var(--foreground) 80%, transparent);
+}
+
+.info-card__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.info-card__filter {
+  padding: 0.35rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 14%, transparent);
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  font-size: 0.9rem;
+  color: var(--foreground);
+}
+
+.info-card__filter--muted {
+  color: color-mix(in srgb, var(--foreground) 70%, transparent);
+}
+
+.info-card__footnote {
+  color: color-mix(in srgb, var(--foreground) 70%, transparent);
+  font-size: 0.9rem;
+}
+
 .chart-tooltip {
   background: #0c1020;
   border: 1px solid #19203a;
@@ -659,7 +704,6 @@ body {
   background: color-mix(in srgb, #2f6bff 20%, transparent);
   border-color: color-mix(in srgb, #2f6bff 60%, transparent);
 }
-
 .steps {
   list-style: none;
   display: grid;

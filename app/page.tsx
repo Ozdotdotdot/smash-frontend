@@ -89,6 +89,51 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const selectedSource = dataSources.find((src) => src.id === selectedSourceId) ?? dataSources[0];
+  const sourceExplainers: Record<
+    string,
+    { title: string; summary: string; filters: string[]; footnote?: string }
+  > = {
+    "ny-featured": {
+      title: "New York snapshot",
+      summary:
+        "Full-state view of who is punching up. Weighted win rate puts more emphasis on set count and tougher opponents.",
+      filters: [
+        "State: New York only",
+        "Players who average brackets with 32+ entrants",
+        "Last 3 months of events",
+      ],
+      footnote: "Toggled outlier hiding trims the top ~1% of opponent strength while keeping high win rates.",
+    },
+    "ga-4o4": {
+      title: "Georgia · 4o4 weekly series",
+      summary:
+        "Focused on the sh33rz 4o4 weeklies to see who thrives in that environment without the broader state rollup.",
+      filters: [
+        "State: Georgia",
+        "Series filter: 4o4 weeklies only",
+        "Last 3 months; keep all entrant sizes",
+      ],
+      footnote: "Use outlier hiding to tame the high-strength tails if the series has a few stacked brackets.",
+    },
+    "ga-default": {
+      title: "Georgia snapshot",
+      summary:
+        "Broader GA view with the same weighted win rate vs opponent strength lens used for the NY example.",
+      filters: [
+        "State: Georgia only",
+        "Players who average brackets with 32+ entrants",
+        "Last 3 months of events",
+      ],
+      footnote: "Outlier toggle removes the strongest ~1% by opponent strength unless a player is winning 70%+.",
+    },
+    default: {
+      title: "Data snapshot",
+      summary:
+        "Scatter plot of weighted win rate against opponent strength. Filters adapt to whichever dashboard is selected.",
+      filters: ["State-level filter", "Last 3 months"],
+    },
+  };
+  const explainer = sourceExplainers[selectedSource.id] ?? sourceExplainers.default;
 
   useEffect(() => {
     const firstFrameDuration = 1400; // linger a bit longer on the full name
@@ -358,7 +403,7 @@ export default function Home() {
             <p>
               View some of our featured dashboards! Each point is a player from your chosen state, positioned by weighted win rate
               and opponent strength. Filtered via API; rendered in Altair / Jupyter today,
-              with a browser dashboard on the way..
+              with a browser dashboard already here.
             </p>
             <p className="text-sm text-foreground/65">
               Roadmap: browser-native dashboard, character filters, and per-region presets.
@@ -444,6 +489,18 @@ export default function Home() {
                 </p>
               ) : null}
             </div>
+          </div>
+          <div className="info-card">
+            <div className="info-card__title">{explainer.title}</div>
+            <p className="info-card__summary">{explainer.summary}</p>
+            <div className="info-card__filters" role="list">
+              {explainer.filters.map((filter) => (
+                <span key={filter} className="info-card__filter" role="listitem">
+                  {filter}
+                </span>
+              ))}
+            </div>
+            {explainer.footnote ? <p className="info-card__footnote">{explainer.footnote}</p> : null}
           </div>
         </section>
 
