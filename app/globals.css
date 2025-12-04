@@ -652,12 +652,30 @@ body {
   text-align: center;
   margin-top: 1.6rem;
   padding: 0.4rem 0 1rem;
+  display: grid;
+  gap: 0.75rem;
+  justify-items: center;
 }
 
 .cta-centered__headline {
   font-size: clamp(var(--cta-headline-min), var(--cta-headline-fluid), var(--cta-headline-max));
   font-weight: 700;
   letter-spacing: 0.01em;
+}
+
+.cta-centered__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 700;
+  padding-inline: 1.1rem;
+}
+
+.cta-centered__icon {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.18));
 }
 
 .chart-tooltip {
