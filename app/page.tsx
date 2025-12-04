@@ -133,7 +133,7 @@ export default function Home() {
     },
     "wa-port-priority-9": {
       title: "Port Priority 9 spotlight",
-      summary: "Washington’s Port Priority 9 series filtered to the past 3 months for Smash Ultimate play.",
+      summary: "Washington’s Port Priority 9 visualized. You can really see where the competition got tough! The top part trails eastward as opponents got tougher and tougher.",
       filters: [
         "State: Washington",
         "Series filter: Port Priority 9 only",
