@@ -82,6 +82,11 @@ export default function Home() {
       label: "GA",
       api: `/api/precomputed?state=GA&months_back=3&limit=0&filter_state=GA&min_entrants=32`,
     },
+    {
+      id: "wa-port-priority-9",
+      label: "WA · Port Priority 9",
+      api: `/api/precomputed_series?state=WA&months_back=3&limit=0&series_key=port-priority-9&videogame_id=1386`,
+    },
   ];
   const [selectedSourceId, setSelectedSourceId] = useState(dataSources[0]?.id ?? "ny-featured");
   const [players, setPlayers] = useState<PlayerPoint[]>([]);
@@ -125,6 +130,17 @@ export default function Home() {
         "Last 3 months of events",
       ],
       footnote: "Outlier toggle removes the strongest ~1% by opponent strength unless a player is winning 70%+.",
+    },
+    "wa-port-priority-9": {
+      title: "Port Priority 9 spotlight",
+      summary: "Washington’s Port Priority 9 series filtered to the past 3 months for Smash Ultimate play.",
+      filters: [
+        "State: Washington",
+        "Series filter: Port Priority 9 only",
+        "Videogame: Smash Ultimate (id 1386)",
+        "Last 3 months",
+      ],
+      footnote: "Great for checking who stood out during the Port Priority run without broader WA brackets.",
     },
     default: {
       title: "Data snapshot",
@@ -176,6 +192,10 @@ export default function Home() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    setHideOutliers(selectedSourceId === "wa-port-priority-9");
+  }, [selectedSourceId]);
 
   const mainVisible = phase === "hidden";
   const markText = frames[frameIndex] ?? frames[0];
