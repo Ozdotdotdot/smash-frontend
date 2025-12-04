@@ -525,6 +525,7 @@ export default function Home() {
               <span className="cta-centered__icon" aria-hidden />
             </div>
           </div>
+          <div className="section-divider" aria-hidden />
         </section>
 
         <footer className="footer">
