@@ -657,6 +657,13 @@ body {
   justify-items: center;
 }
 
+.cta-centered__action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .cta-centered__headline {
   font-size: clamp(var(--cta-headline-min), var(--cta-headline-fluid), var(--cta-headline-max));
   font-weight: 700;
@@ -666,15 +673,17 @@ body {
 .cta-centered__button {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
   font-weight: 700;
   padding-inline: 1.1rem;
 }
 
 .cta-centered__icon {
-  width: 28px;
-  height: 28px;
-  display: inline-block;
+  position: absolute;
+  left: -52px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
   background-image: url("/fox-standing.png");
   background-size: contain;
   background-repeat: no-repeat;
@@ -682,15 +691,15 @@ body {
   transition: transform 160ms ease;
 }
 
-.cta-centered__button:hover .cta-centered__icon {
+.cta-centered__button:hover ~ .cta-centered__icon {
   animation: fox-run 450ms steps(3) infinite;
-  transform: translateY(-1px);
+  transform: translate(-0px, -51%);
 }
 
-.cta-centered__button:active .cta-centered__icon {
+.cta-centered__button:active ~ .cta-centered__icon {
   animation: none;
   background-image: url("/fox-shine.png");
-  transform: translateY(0);
+  transform: translate(-0px, -50%);
 }
 
 @keyframes fox-run {

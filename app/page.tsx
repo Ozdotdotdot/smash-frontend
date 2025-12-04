@@ -518,10 +518,12 @@ export default function Home() {
           <div className="section-divider" aria-hidden />
           <div className="cta-centered">
             <div className="cta-centered__headline">So what are you waiting for? Start visualizing.</div>
-            <Link className="btn cta-centered__button" href="/dashboard">
+            <div className="cta-centered__action">
+              <Link className="btn cta-centered__button" href="/dashboard">
+                To the Dashboard
+              </Link>
               <span className="cta-centered__icon" aria-hidden />
-              To the Dashboard
-            </Link>
+            </div>
           </div>
         </section>
 
