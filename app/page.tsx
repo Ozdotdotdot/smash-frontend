@@ -519,7 +519,7 @@ export default function Home() {
           <div className="cta-centered">
             <div className="cta-centered__headline">So what are you waiting for? Start visualizing.</div>
             <Link className="btn cta-centered__button" href="/dashboard">
-              <img src="/fox-standing.png" alt="" className="cta-centered__icon" />
+              <span className="cta-centered__icon" aria-hidden />
               To the Dashboard
             </Link>
           </div>
