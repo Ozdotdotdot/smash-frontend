@@ -687,6 +687,12 @@ body {
   transform: translateY(-1px);
 }
 
+.cta-centered__button:active .cta-centered__icon {
+  animation: none;
+  background-image: url("/fox-shine.png");
+  transform: translateY(0);
+}
+
 @keyframes fox-run {
   0% { background-image: url("/fox-moving-1.png"); }
   33% { background-image: url("/fox-moving-2.png"); }
