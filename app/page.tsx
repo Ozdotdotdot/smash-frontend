@@ -515,6 +515,7 @@ export default function Home() {
             </div>
             {explainer.footnote ? <p className="info-card__footnote">{explainer.footnote}</p> : null}
           </div>
+          <div className="section-divider" aria-hidden />
         </section>
 
         <footer className="footer">
