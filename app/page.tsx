@@ -401,12 +401,7 @@ export default function Home() {
           <div className="section__copy">
             <h2 className="section__title">A single scatter plot that tells the story</h2>
             <p>
-              View some of our featured dashboards! Each point is a player from your chosen state, positioned by weighted win rate
-              and opponent strength. Filtered via API; rendered in Altair / Jupyter today,
-              with a browser dashboard already here.
-            </p>
-            <p className="text-sm text-foreground/65">
-              Roadmap: browser-native dashboard, character filters, and per-region presets.
+              Compare players in your scene at a glance. Each dot is a player, positioned by weighted win rate and opponent strength over the last 3 months. Switch states, filter by bracket size, and explore who’s actually cooking.
             </p>
             <div className="flex flex-wrap gap-2 pt-3">
               {dataSources.map((src) => (
@@ -420,9 +415,6 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-xs text-foreground/50">
-              Data via precomputed API (last 3 months). Win rate vs opponent strength.
-            </p>
           </div>
           <div className="chart-card">
             <div className="chart-card__header">
