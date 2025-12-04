@@ -137,7 +137,6 @@ export default function Home() {
       filters: [
         "State: Washington",
         "Series filter: Port Priority 9 only",
-        "Videogame: Smash Ultimate (id 1386)",
         "Last 3 months",
       ],
       footnote: "Great for checking who stood out during the Port Priority run without broader WA brackets.",
