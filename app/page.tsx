@@ -401,8 +401,10 @@ export default function Home() {
           <div className="section__copy">
             <h2 className="section__title">A single scatter plot that tells the story</h2>
             <p>
-              Compare players in your scene at a glance. Each dot is a player, positioned by weighted win rate and opponent strength over the last 3 months. Switch states, filter by bracket size, and explore who’s actually cooking.
+              Compare players in your scene at a glance. Each dot is a player, positioned by weighted win rate and opponent strength
+               over the last 3 months. Switch states, filter by bracket size, and explore who’s actually cooking.
             </p>
+            <p className="pill-label">Featured presets</p>
             <div className="flex flex-wrap gap-2 pt-3">
               {dataSources.map((src) => (
                 <button

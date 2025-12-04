@@ -503,6 +503,14 @@ body {
   color: color-mix(in srgb, var(--foreground) 78%, transparent);
 }
 
+.pill-label {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: color-mix(in srgb, var(--foreground) 70%, transparent);
+}
+
 .mock-chart {
   border-radius: 18px;
   padding: 1.2rem;
