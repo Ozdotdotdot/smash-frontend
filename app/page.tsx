@@ -411,7 +411,7 @@ export default function Home() {
                 </a>
               </div>
               <p className="text-xs uppercase tracking-[0.2em] text-foreground/55">
-                v0.1 – precomputed US state data (~3 months) via API and notebooks.
+                v0.1 – precomputed US state data (~3 months)
               </p>
             </div>
           </div>
