@@ -516,16 +516,8 @@ export default function Home() {
             {explainer.footnote ? <p className="info-card__footnote">{explainer.footnote}</p> : null}
           </div>
           <div className="section-divider" aria-hidden />
-          <div className="cta-inline">
-            <div className="cta-inline__image" aria-hidden>
-              <img src="/fox-ascii.png" alt="" loading="lazy" />
-            </div>
-            <div className="cta-inline__content">
-              <div className="cta-inline__headline">So what are you waiting for? Start visualizing.</div>
-              <Link className="btn" href="/dashboard">
-                Open the browser dashboard
-              </Link>
-            </div>
+          <div className="cta-centered">
+            <div className="cta-centered__headline">So what are you waiting for? Start visualizing.</div>
           </div>
         </section>
 

@@ -3,6 +3,9 @@
 :root {
   --background: #060910;
   --foreground: #f5f7fb;
+  --cta-headline-min: 2.2rem;
+  --cta-headline-fluid: 5vw;
+  --cta-headline-max: 3.6rem;
 }
 
 @theme inline {
@@ -644,55 +647,17 @@ body {
   background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--foreground) 20%, transparent), transparent);
 }
 
-.cta-inline {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.6rem;
-  align-items: center;
-  margin-top: 1.2rem;
-}
-
-.cta-inline__image {
+.cta-centered {
   width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  text-align: center;
+  margin-top: 1.6rem;
+  padding: 0.4rem 0 1rem;
 }
 
-.cta-inline__image img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: contain;
-  filter: invert(1);
-  mix-blend-mode: screen;
-  opacity: 0.3;
-}
-
-.cta-inline__content {
-  display: grid;
-  gap: 0.6rem;
-}
-
-.cta-inline__headline {
-  font-size: clamp(1.25rem, 3vw, 1.7rem);
+.cta-centered__headline {
+  font-size: clamp(var(--cta-headline-min), var(--cta-headline-fluid), var(--cta-headline-max));
   font-weight: 700;
-}
-
-@media (max-width: 640px) {
-  .cta-inline {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-
-  .cta-inline__image {
-    justify-self: center;
-  }
-
-  .cta-inline .btn {
-    justify-self: center;
-  }
+  letter-spacing: 0.01em;
 }
 
 .chart-tooltip {
