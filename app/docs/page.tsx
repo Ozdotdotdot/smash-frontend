@@ -81,29 +81,36 @@ export default function DocsPage() {
 
       <div className="docs-shell">
         <input id="docs-nav-toggle" type="checkbox" className="docs-nav-toggle" />
+        <div className="docs-nav-rail" aria-hidden />
         <label htmlFor="docs-nav-toggle" className="docs-nav-toggle__label">
           <span className="docs-nav-toggle__icon" aria-hidden />
-          <span>Docs navigation</span>
+          <span className="sr-only">Toggle docs navigation</span>
         </label>
+        <label htmlFor="docs-nav-toggle" className="docs-nav-overlay" aria-hidden />
         <aside className="docs-nav">
           <div className="docs-nav__label">On this page</div>
           <ul className="docs-nav__list">
             {groupedToc.map((section) => (
               <li key={section.id} className="docs-nav__section">
-                <details open>
-                  <summary>
-                    <a href={`#${section.id}`}>{section.text}</a>
-                  </summary>
-                  {section.children.length > 0 ? (
-                    <ul>
+                {section.children.length > 0 ? (
+                  <details open>
+                    <summary className="docs-nav__summary docs-nav__summary--has-children">
+                      <span>{section.text}</span>
+                      <span className="docs-nav__chevron" aria-hidden />
+                    </summary>
+                    <ul className="docs-nav__children">
                       {section.children.map((child) => (
-                        <li key={child.id} className={`docs-nav__item docs-nav__item--lvl-${Math.min(child.level, 3)}`}>
+                        <li key={child.id} className="docs-nav__item">
                           <a href={`#${child.id}`}>{child.text}</a>
                         </li>
                       ))}
                     </ul>
-                  ) : null}
-                </details>
+                  </details>
+                ) : (
+                  <a className="docs-nav__link" href={`#${section.id}`}>
+                    {section.text}
+                  </a>
+                )}
               </li>
             ))}
           </ul>
