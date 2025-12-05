@@ -721,19 +721,13 @@ body {
   gap: 1.5rem;
   margin-top: 0.1rem;
   position: relative;
-}
-
-.spotlight-grid__header {
-  grid-column: 1 / -1;
-  font-size: 1.1rem;
-  font-weight: 700;
-  text-align: center;
-  color: color-mix(in srgb, var(--foreground) 75%, transparent);
-  margin: 0.5rem 0 0.6rem;
+  justify-items: center;
 }
 
 .spotlight-card {
   position: relative;
+  width: 100%;
+  max-width: 360px;
   border-radius: 16px;
   padding: 1rem;
   border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
@@ -742,6 +736,15 @@ body {
   transition: transform 160ms ease, border-color 160ms ease;
   --mx: 50%;
   --my: 50%;
+}
+
+.spotlight-grid__header {
+  grid-column: 1 / -1;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+  color: color-mix(in srgb, var(--foreground) 75%, transparent);
+  margin: 0.25rem 0 0.45rem;
 }
 
 .spotlight-card::before {
@@ -779,6 +782,16 @@ body {
 .spotlight-card__body {
   margin-top: 0.35rem;
   color: color-mix(in srgb, var(--foreground) 80%, transparent);
+}
+
+@media (max-width: 640px) {
+  .spotlight-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .spotlight-card {
+    max-width: 420px;
+  }
 }
 
 .chart-tooltip {
