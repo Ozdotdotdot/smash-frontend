@@ -39,6 +39,18 @@ export default function DocsPage() {
   const docPath = path.join(process.cwd(), "DOCUMENTATION.md");
   const markdown = fs.existsSync(docPath) ? fs.readFileSync(docPath, "utf8") : "# Documentation\nContent not found.";
   const toc = buildToc(markdown);
+  const groupedToc: Array<TocItem & { children: TocItem[] }> = [];
+  let current: TocItem & { children: TocItem[] } | null = null;
+
+  toc.forEach((item) => {
+    if (item.level <= 2 || !current) {
+      const section = { ...item, children: [] as TocItem[] };
+      groupedToc.push(section);
+      current = section;
+      return;
+    }
+    current.children.push(item);
+  });
   const headingSlugCounts: Record<string, number> = {};
 
   const headingWithId = (Tag: "h1" | "h2" | "h3") =>
@@ -68,12 +80,30 @@ export default function DocsPage() {
       </div>
 
       <div className="docs-shell">
+        <input id="docs-nav-toggle" type="checkbox" className="docs-nav-toggle" />
+        <label htmlFor="docs-nav-toggle" className="docs-nav-toggle__label">
+          <span className="docs-nav-toggle__icon" aria-hidden />
+          <span>Docs navigation</span>
+        </label>
         <aside className="docs-nav">
           <div className="docs-nav__label">On this page</div>
-          <ul>
-            {toc.map((item) => (
-              <li key={item.id} className={`docs-nav__item docs-nav__item--lvl-${Math.min(item.level, 3)}`}>
-                <a href={`#${item.id}`}>{item.text}</a>
+          <ul className="docs-nav__list">
+            {groupedToc.map((section) => (
+              <li key={section.id} className="docs-nav__section">
+                <details open>
+                  <summary>
+                    <a href={`#${section.id}`}>{section.text}</a>
+                  </summary>
+                  {section.children.length > 0 ? (
+                    <ul>
+                      {section.children.map((child) => (
+                        <li key={child.id} className={`docs-nav__item docs-nav__item--lvl-${Math.min(child.level, 3)}`}>
+                          <a href={`#${child.id}`}>{child.text}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </details>
               </li>
             ))}
           </ul>
