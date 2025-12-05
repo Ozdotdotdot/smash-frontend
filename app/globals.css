@@ -1256,6 +1256,11 @@ body {
   color: color-mix(in srgb, var(--foreground) 80%, transparent);
 }
 
+.spotlight-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
 @media (max-width: 640px) {
   .spotlight-grid {
     grid-template-columns: 1fr;
