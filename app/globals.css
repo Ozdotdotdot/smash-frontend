@@ -720,6 +720,16 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
   margin-top: 1.4rem;
+  position: relative;
+}
+
+.spotlight-grid__header {
+  grid-column: 1 / -1;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+  color: color-mix(in srgb, var(--foreground) 75%, transparent);
+  margin: 0.5rem 0 0.6rem;
 }
 
 .spotlight-card {
