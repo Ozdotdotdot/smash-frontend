@@ -715,6 +715,62 @@ body {
   100% { background-image: url("/fox-moving-1.png"); }
 }
 
+.spotlight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1.4rem;
+}
+
+.spotlight-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04));
+  overflow: hidden;
+  transition: transform 160ms ease, border-color 160ms ease;
+  --mx: 50%;
+  --my: 50%;
+}
+
+.spotlight-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, 0.18), transparent 70%);
+  opacity: 0;
+  transition: opacity 160ms ease;
+  pointer-events: none;
+}
+
+.spotlight-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--foreground) 26%, transparent);
+}
+
+.spotlight-card:hover::before {
+  opacity: 1;
+}
+
+.spotlight-card__subtitle {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  color: color-mix(in srgb, var(--foreground) 70%, transparent);
+}
+
+.spotlight-card__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 0.3rem;
+}
+
+.spotlight-card__body {
+  margin-top: 0.35rem;
+  color: color-mix(in srgb, var(--foreground) 80%, transparent);
+}
+
 .chart-tooltip {
   background: #0c1020;
   border: 1px solid #19203a;

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -35,6 +35,47 @@ type FilteredData = {
   hidden: number;
   upperBound?: number;
 };
+
+type SpotlightCardProps = {
+  title: string;
+  subtitle: string;
+  body: string;
+};
+
+function SpotlightCard({ title, subtitle, body }: SpotlightCardProps) {
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    el.style.setProperty("--mx", `${x}px`);
+    el.style.setProperty("--my", `${y}px`);
+  };
+
+  const handleMouseLeave = () => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.setProperty("--mx", "50%");
+    el.style.setProperty("--my", "50%");
+  };
+
+  return (
+    <div
+      ref={ref}
+      className="spotlight-card"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      role="article"
+    >
+      <div className="spotlight-card__subtitle">{subtitle}</div>
+      <div className="spotlight-card__title">{title}</div>
+      <p className="spotlight-card__body">{body}</p>
+    </div>
+  );
+}
 
 function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
@@ -529,6 +570,23 @@ export default function Home() {
             </div>
           </div>
           <div className="section-divider" aria-hidden />
+          <div className="spotlight-grid">
+            <SpotlightCard
+              title="Documentation"
+              subtitle="Looking for docs?"
+              body="Are you looking to figure out how to use the dashboard? Start with the docs and walkthroughs."
+            />
+            <SpotlightCard
+              title="How it works"
+              subtitle="Curious about the pipeline?"
+              body="Want to learn about how it all works? Peek at the data flow, metrics, and filtering logic."
+            />
+            <SpotlightCard
+              title="About us"
+              subtitle="Behind the scenes"
+              body='Well it&apos;s just "me", but feel free to read more about the project and roadmap.'
+            />
+          </div>
         </section>
 
         <footer className="footer">
