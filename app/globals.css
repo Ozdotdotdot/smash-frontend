@@ -668,6 +668,12 @@ body {
   font-size: clamp(var(--cta-headline-min), var(--cta-headline-fluid), var(--cta-headline-max));
   font-weight: 700;
   letter-spacing: 0.01em;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.cta-centered__line {
+  display: block;
 }
 
 .cta-centered__button {
