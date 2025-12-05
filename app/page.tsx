@@ -571,6 +571,7 @@ export default function Home() {
           </div>
           <div className="section-divider" aria-hidden />
           <div className="spotlight-grid">
+            <p className="spotlight-grid__header">Want to dig deeper?</p>
             <SpotlightCard
               title="Documentation"
               subtitle="Looking for docs?"
