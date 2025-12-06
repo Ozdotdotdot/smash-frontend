@@ -5,7 +5,6 @@
 /tailwindcss
 /smashDA
 /ui
-/nextra-docs-template
 
 # dependencies
 /node_modules
@@ -55,3 +54,6 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# documentation
+/DOCUMENTATION
