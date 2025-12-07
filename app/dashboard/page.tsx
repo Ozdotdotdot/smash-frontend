@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { Info } from "lucide-react";
 import {
   CartesianGrid,
@@ -8,7 +8,7 @@ import {
   Scatter,
   ScatterChart,
   Tooltip as RechartsTooltip,
-  TooltipProps,
+  TooltipContentProps,
   XAxis,
   YAxis,
 } from "recharts";
@@ -197,7 +197,7 @@ function FilterPanel({
   onApply: () => void;
   onReset: () => void;
   allowMultiSeries: boolean;
-  setAllowMultiSeries: (value: boolean) => void;
+  setAllowMultiSeries: Dispatch<SetStateAction<boolean>>;
   seriesOptions: Array<{ key: string; label: string }>;
   selectedSeriesKey: string | null;
   onSelectSeries: (key: string) => void;
@@ -834,8 +834,9 @@ export default function DashboardPage() {
               setChartData(json.results ?? []);
             } else if (!requestedSeriesKey && hasSeriesList) {
               const labels = json.resolved_labels ?? [];
+              const seriesKeys = json.series_keys ?? [];
               setSeriesOptions(
-                json.series_keys.map((key, idx) => ({
+                seriesKeys.map((key, idx) => ({
                   key,
                   label: labels[idx] ?? key,
                 })),
@@ -999,7 +1000,7 @@ export default function DashboardPage() {
     setHideOutliers(false);
   };
 
-  const ChartTooltip = ({ active, payload }: TooltipProps<number, string>) => {
+  const ChartTooltip = ({ active, payload }: TooltipContentProps<number, string>) => {
     if (!active || !payload?.length) return null;
     const row = payload[0]?.payload as PlayerPoint | undefined;
     if (!row) return null;
@@ -1149,12 +1150,14 @@ export default function DashboardPage() {
                           tickLine={false}
                           tick={{ fontSize: 12 }}
                         />
-                        <RechartsTooltip
-                          cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
-                          content={<ChartTooltip />}
-                          wrapperStyle={{ transition: "none" }}
-                          animationDuration={0}
-                        />
+        <RechartsTooltip<number, string>
+          cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
+          content={(props: TooltipContentProps<number, string>) => (
+            <ChartTooltip {...props} />
+          )}
+          wrapperStyle={{ transition: "none" }}
+          animationDuration={0}
+        />
                       <Scatter
                         name="Players"
                         data={displayedPoints}

@@ -8,7 +8,7 @@ import {
   Scatter,
   ScatterChart,
   Tooltip,
-  TooltipProps,
+  TooltipContentProps,
   XAxis,
   YAxis,
 } from "recharts";
@@ -77,7 +77,7 @@ function SpotlightCard({ title, subtitle, body }: SpotlightCardProps) {
   );
 }
 
-function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
+function ChartTooltip({ active, payload }: TooltipContentProps<number, string>) {
   if (!active || !payload?.length) return null;
   const row = payload[0]?.payload as PlayerPoint | undefined;
   if (!row) return null;
@@ -514,9 +514,11 @@ export default function Home() {
                     stroke="rgba(255,255,255,0.55)"
                     tickLine={false}
                   />
-                  <Tooltip
+                  <Tooltip<number, string>
                     cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
-                    content={<ChartTooltip />}
+                    content={(props: TooltipContentProps<number, string>) => (
+                      <ChartTooltip {...props} />
+                    )}
                     wrapperStyle={{ transition: "none" }}
                     animationDuration={0}
                   />
