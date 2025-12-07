@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 type TooltipContextValue = {
   open: boolean
   setOpen: (open: boolean) => void
-  triggerRef: React.RefObject<HTMLButtonElement>
+  triggerRef: React.RefObject<HTMLButtonElement | null>
 }
 
 const TooltipContext = React.createContext<TooltipContextValue | null>(null)
@@ -18,19 +18,21 @@ function TooltipProvider({
   delayDuration = 0,
 }: React.PropsWithChildren<{ delayDuration?: number }>) {
   const [open, setOpen] = React.useState(false)
-  const timeoutRef = React.useRef<number>()
+  const timeoutRef = React.useRef<number | null>(null)
   const triggerRef = React.useRef<HTMLButtonElement | null>(null)
 
   const setWithDelay = React.useCallback(
     (next: boolean) => {
-      window.clearTimeout(timeoutRef.current)
+      if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current)
       timeoutRef.current = window.setTimeout(() => setOpen(next), delayDuration)
     },
     [delayDuration]
   )
 
   React.useEffect(() => {
-    return () => window.clearTimeout(timeoutRef.current)
+    return () => {
+      if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current)
+    }
   }, [])
 
   return (
