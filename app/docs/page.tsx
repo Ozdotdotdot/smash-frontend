@@ -2,6 +2,8 @@ import fs from "fs";
 import path from "path";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
+import type { Components } from "react-markdown";
+import type { HTMLAttributes } from "react";
 import remarkGfm from "remark-gfm";
 
 type TocItem = { id: string; text: string; level: number };
@@ -53,6 +55,8 @@ export default function DocsPage() {
   });
   const headingSlugCounts: Record<string, number> = {};
 
+  type CodeComponentProps = HTMLAttributes<HTMLElement> & { inline?: boolean };
+
   const headingWithId = (Tag: "h1" | "h2" | "h3") =>
     // eslint-disable-next-line react/display-name
     ({ node, ...props }: any) => {
@@ -64,6 +68,37 @@ export default function DocsPage() {
         </Tag>
       );
     };
+
+  const markdownComponents: Components = {
+    h1: headingWithId("h1"),
+    h2: headingWithId("h2"),
+    h3: headingWithId("h3"),
+    p: ({ node, ...props }) => <p className="docs-paragraph" {...props} />,
+    ul: ({ node, ...props }) => <ul className="docs-list" {...props} />,
+    ol: ({ node, ...props }) => <ol className="docs-list docs-list--ordered" {...props} />,
+    li: ({ node, ...props }) => <li className="docs-list__item" {...props} />,
+    pre: ({ node, ...props }) => (
+      <pre className="docs-code" {...props}>
+        {props.children}
+      </pre>
+    ),
+    code: ({ inline, className, children, ...props }: CodeComponentProps) =>
+      inline ? (
+        <code className="docs-inline-code" {...props}>
+          {children}
+        </code>
+      ) : (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      ),
+    blockquote: ({ node, ...props }) => <blockquote className="docs-quote" {...props} />,
+    table: ({ node, ...props }) => <table className="docs-table" {...props} />,
+    thead: ({ node, ...props }) => <thead className="docs-table__head" {...props} />,
+    tbody: ({ node, ...props }) => <tbody className="docs-table__body" {...props} />,
+    th: ({ node, ...props }) => <th className="docs-table__cell docs-table__cell--head" {...props} />,
+    td: ({ node, ...props }) => <td className="docs-table__cell" {...props} />,
+  };
 
   return (
     <main className="docs-page">
@@ -118,36 +153,7 @@ export default function DocsPage() {
         <section className="docs-content">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            components={{
-              h1: headingWithId("h1"),
-              h2: headingWithId("h2"),
-              h3: headingWithId("h3"),
-              p: ({ node, ...props }) => <p className="docs-paragraph" {...props} />,
-              ul: ({ node, ...props }) => <ul className="docs-list" {...props} />,
-              ol: ({ node, ...props }) => <ol className="docs-list docs-list--ordered" {...props} />,
-              li: ({ node, ...props }) => <li className="docs-list__item" {...props} />,
-              pre: ({ node, ...props }) => (
-                <pre className="docs-code" {...props}>
-                  {props.children}
-                </pre>
-              ),
-              code: ({ inline, className, children, ...props }) =>
-                inline ? (
-                  <code className="docs-inline-code" {...props}>
-                    {children}
-                  </code>
-                ) : (
-                  <code className={className} {...props}>
-                    {children}
-                  </code>
-                ),
-              blockquote: ({ node, ...props }) => <blockquote className="docs-quote" {...props} />,
-              table: ({ node, ...props }) => <table className="docs-table" {...props} />,
-              thead: ({ node, ...props }) => <thead className="docs-table__head" {...props} />,
-              tbody: ({ node, ...props }) => <tbody className="docs-table__body" {...props} />,
-              th: ({ node, ...props }) => <th className="docs-table__cell docs-table__cell--head" {...props} />,
-              td: ({ node, ...props }) => <td className="docs-table__cell" {...props} />,
-            }}
+            components={markdownComponents}
           >
             {markdown}
           </ReactMarkdown>
