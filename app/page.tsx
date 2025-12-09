@@ -361,9 +361,9 @@ export default function Home() {
               <Link href="/dashboard" className="site-nav__link">
                 <LetterSwapForward label="Dashboard" staggerDuration={0} />
               </Link>
-              <Link href="/docs" className="site-nav__link">
-                <LetterSwapForward label="Docs / reading" staggerDuration={0} />
-              </Link>
+              <a href="https://docs.smash.watch" className="site-nav__link">
+                <LetterSwapForward label="Docs" staggerDuration={0} />
+              </a>
             </div>
             <a
               className="site-nav__cta site-nav__cta--desktop"
@@ -406,9 +406,13 @@ export default function Home() {
               <Link href="/dashboard" className="site-nav__link" onClick={() => setNavOpen(false)}>
                 <LetterSwapForward label="Dashboard" staggerDuration={0} />
               </Link>
-              <Link href="/docs" className="site-nav__link" onClick={() => setNavOpen(false)}>
-                <LetterSwapForward label="Docs / reading" staggerDuration={0} />
-              </Link>
+              <a
+                href="https://docs.smash.watch"
+                className="site-nav__link"
+                onClick={() => setNavOpen(false)}
+              >
+                <LetterSwapForward label="Docs" staggerDuration={0} />
+              </a>
             </div>
             <a
               className="site-nav__cta site-nav__cta--mobile"
@@ -574,13 +578,13 @@ export default function Home() {
           <div className="section-divider" aria-hidden />
           <div className="spotlight-grid">
             <p className="spotlight-grid__header">Want to dig deeper?</p>
-            <Link href="/docs" className="spotlight-card-link">
+            <a href="https://docs.smash.watch" className="spotlight-card-link">
               <SpotlightCard
                 title="Documentation"
                 subtitle="Looking for docs?"
                 body="Are you looking to figure out how to use the dashboard? Start with the docs and walkthroughs."
               />
-            </Link>
+            </a>
             <SpotlightCard
               title="How it works"
               subtitle="Curious about the pipeline?"
