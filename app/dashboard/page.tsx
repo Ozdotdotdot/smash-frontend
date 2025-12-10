@@ -917,7 +917,6 @@ export default function DashboardPage() {
     // If a specific tournament slug/URL is provided, hit the search endpoint for that exact slug.
     if (slug) {
       const params = new URLSearchParams({
-        months_back: String(monthsBack),
         limit: "0",
         videogame_id: DEFAULT_VIDEOGAME_ID,
       });
@@ -929,8 +928,6 @@ export default function DashboardPage() {
           .map((s) => s.trim().toUpperCase())
           .filter(Boolean)
           .forEach((code) => params.append("filter_state", code));
-      } else if (hasState) {
-        params.set("filter_state", tournamentFilters.state.trim().toUpperCase());
       }
       maybeSet(params, "character", tournamentFilters.characters);
       maybeSet(params, "min_entrants", tournamentFilters.minEntrants);
