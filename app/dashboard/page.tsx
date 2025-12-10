@@ -871,11 +871,6 @@ export default function DashboardPage() {
       setChartData([]);
       return;
     }
-    if (viewType === "tournament" && !tournamentFilters.state.trim()) {
-      setError("Select a state to run the search.");
-      setChartData([]);
-      return;
-    }
 
     if (viewType === "state") {
       const params = buildStateQuery();
@@ -900,7 +895,13 @@ export default function DashboardPage() {
       return;
     }
     const hasSeries = tournamentFilters.series.trim().length > 0;
+    const hasState = tournamentFilters.state.trim().length > 0;
     const hasSlug = tournamentFilters.slugOrUrl.trim().length > 0;
+    if (!hasState && !hasSlug) {
+      setError("Select a state or provide a tournament URL/slug to run the search.");
+      setChartData([]);
+      return;
+    }
     if (!hasSeries && !hasSlug) {
       setError("Provide a tournament series or URL/slug to fetch tournament data.");
       return;
@@ -916,11 +917,11 @@ export default function DashboardPage() {
     // If a specific tournament slug/URL is provided, hit the search endpoint for that exact slug.
     if (slug) {
       const params = new URLSearchParams({
-        state: tournamentFilters.state.trim().toUpperCase(),
         months_back: String(monthsBack),
         limit: "0",
         videogame_id: DEFAULT_VIDEOGAME_ID,
       });
+      if (hasState) params.set("state", tournamentFilters.state.trim().toUpperCase());
       params.append("tournament_slug", slug);
       if (tournamentFilters.filterStates.trim()) {
         tournamentFilters.filterStates
@@ -928,6 +929,8 @@ export default function DashboardPage() {
           .map((s) => s.trim().toUpperCase())
           .filter(Boolean)
           .forEach((code) => params.append("filter_state", code));
+      } else if (hasState) {
+        params.set("filter_state", tournamentFilters.state.trim().toUpperCase());
       }
       maybeSet(params, "character", tournamentFilters.characters);
       maybeSet(params, "min_entrants", tournamentFilters.minEntrants);
