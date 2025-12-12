@@ -677,6 +677,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [allowMultiSeries, setAllowMultiSeries] = useState(false);
   const [forceRefresh, setForceRefresh] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [seriesOptions, setSeriesOptions] = useState<Array<{ key: string; label: string }>>([]);
   const [selectedSeriesKey, setSelectedSeriesKey] = useState<string | null>(null);
   const [hideOutliers, setHideOutliers] = useState(false);
@@ -736,6 +737,12 @@ export default function DashboardPage() {
       return strength <= upperBound;
     });
   }, [chartPoints, hideOutliers]);
+
+  const filteredRows = useMemo(() => {
+    const term = searchQuery.trim().toLowerCase();
+    if (!term) return displayedPoints;
+    return displayedPoints.filter((row) => (row.gamer_tag ?? "").toLowerCase().includes(term));
+  }, [displayedPoints, searchQuery]);
 
   const buildStateQuery = () => {
     const params = new URLSearchParams({
@@ -1325,9 +1332,19 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="mt-4 overflow-hidden rounded-lg border border-white/10 bg-black/30">
-                    <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs uppercase tracking-[0.2em] text-foreground/60">
-                      <span>Players</span>
-                      <span>{displayedPoints.length} rows</span>
+                    <div className="flex flex-wrap items-center gap-3 border-b border-white/10 px-4 py-3 text-xs uppercase tracking-[0.2em] text-foreground/60">
+                      <div className="flex items-center gap-3">
+                        <span>Players</span>
+                        <input
+                          type="search"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Search player"
+                          className="w-44 rounded-md border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-normal uppercase tracking-[0.08em] text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40 focus:bg-white/10"
+                          aria-label="Search players by gamer tag"
+                        />
+                      </div>
+                      <span className="ml-auto">{filteredRows.length} rows</span>
                     </div>
                     <Table>
                       <TableHeader className="bg-white/5 text-sm font-medium">
@@ -1339,7 +1356,7 @@ export default function DashboardPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody className="text-sm">
-                        {displayedPoints.map((row, idx) => (
+                        {filteredRows.map((row, idx) => (
                           <TableRow
                             key={`${row.player_id ?? row.gamer_tag ?? "row"}-${idx}`}
                             className="border-b border-white/5 last:border-0"
