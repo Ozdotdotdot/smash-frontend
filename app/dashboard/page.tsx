@@ -158,13 +158,11 @@ type PlayerPoint = {
 
 const TIMEFRAME_OPTIONS = [
   { value: "30d", label: "Last 30 days" },
-  { value: "60d", label: "Last 60 days" },
   { value: "3m", label: "Last 3 months" },
 ];
 
 const TIMEFRAME_TO_MONTHS: Record<string, number> = {
   "30d": 1,
-  "60d": 2,
   "3m": 3,
 };
 
