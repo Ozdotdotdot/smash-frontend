@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   CartesianGrid,
@@ -104,11 +103,15 @@ function ChartTooltip({ active, payload }: TooltipContentProps<number, string>) 
 }
 
 export default function Home() {
-  const searchParams = useSearchParams();
-  const skipSplash =
-    searchParams.get("skipSplash") === "1" || searchParams.get("skipSplash") === "true";
-
-  const [phase, setPhase] = useState<SplashPhase>(skipSplash ? "hidden" : "full");
+  const initialSkipSplash =
+    typeof window !== "undefined" &&
+    (() => {
+      const params = new URLSearchParams(window.location.search);
+      const val = params.get("skipSplash");
+      return val === "1" || val === "true";
+    })();
+  const [skipSplash, setSkipSplash] = useState<boolean>(!!initialSkipSplash);
+  const [phase, setPhase] = useState<SplashPhase>(initialSkipSplash ? "hidden" : "full");
   const frames = ["smash.watch", "smas.wtch", "sma.wch", "ss.wh", "s.w"];
   const [frameIndex, setFrameIndex] = useState(0);
   const [navOpen, setNavOpen] = useState(false);
@@ -197,10 +200,7 @@ export default function Home() {
   const explainer = sourceExplainers[selectedSource.id] ?? sourceExplainers.default;
 
   useEffect(() => {
-    if (skipSplash) {
-      setPhase("hidden");
-      return;
-    }
+    if (skipSplash) return;
     const firstFrameDuration = 1400; // linger a bit longer on the full name
     const frameDuration = 140; // quick collapse progression
 
@@ -286,6 +286,15 @@ export default function Home() {
   }, [hideOutliers, players]);
 
   useEffect(() => {
+    // Update skipSplash if query changes client-side (e.g., navigation)
+    const params = new URLSearchParams(window.location.search);
+    const val = params.get("skipSplash");
+    const shouldSkip = val === "1" || val === "true";
+    if (shouldSkip !== skipSplash) {
+      setSkipSplash(shouldSkip);
+      if (shouldSkip) setPhase("hidden");
+    }
+
     if (!mainVisible) return; // delay data fetch until after splash finishes
     const controller = new AbortController();
     setIsLoading(true);
