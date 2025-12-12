@@ -725,6 +725,8 @@ export default function DashboardPage() {
     });
   }, [chartPoints, hideOutliers]);
 
+  const playerKey = (row: PlayerPoint) => String(row.player_id ?? row.gamer_tag ?? "");
+
   const filteredRows = useMemo(() => {
     const term = searchQuery.trim().toLowerCase();
     if (!term) return displayedPoints;
@@ -734,7 +736,7 @@ export default function DashboardPage() {
   }, [displayedPoints, searchQuery]);
 
   const toggleSelectedPlayer = (row: PlayerPoint) => {
-    const key = String(row.player_id ?? row.gamer_tag ?? "");
+    const key = playerKey(row);
     if (!key) return;
     setSelectedPlayers((prev) => {
       const next = new Set(prev);
@@ -1065,6 +1067,40 @@ export default function DashboardPage() {
     );
   };
 
+  const StarPoint = ({ cx, cy }: { cx?: number; cy?: number }) => {
+    if (cx === undefined || cy === undefined) return null;
+    const size = 18;
+    return (
+      <image
+        x={cx - size / 2}
+        y={cy - size / 2}
+        width={size}
+        height={size}
+        href="/star-icon.svg"
+        aria-hidden
+      />
+    );
+  };
+
+  const renderPoint = (props: { cx?: number; cy?: number; payload?: any }) => {
+    const { cx, cy, payload } = props;
+    const row = payload as PlayerPoint | undefined;
+    if (!row || cx === undefined || cy === undefined) return null;
+    const isSelected = selectedPlayers.has(playerKey(row));
+    if (isSelected) return <StarPoint cx={cx} cy={cy} />;
+    return (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={4.5}
+        fill="#4ade80"
+        fillOpacity={0.95}
+        stroke="rgba(0,0,0,0.35)"
+        strokeWidth={0.6}
+      />
+    );
+  };
+
   return (
     <div className="relative min-h-screen bg-background text-foreground">
       {/* Particles Background */}
@@ -1305,22 +1341,19 @@ export default function DashboardPage() {
                           tickLine={false}
                           tick={{ fontSize: 12 }}
                         />
-        <RechartsTooltip<number, string>
-          cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
-          content={(props: TooltipContentProps<number, string>) => (
-            <ChartTooltip {...props} />
-          )}
-          wrapperStyle={{ transition: "none" }}
-          animationDuration={0}
-        />
-                      <Scatter
-                        name="Players"
-                        data={displayedPoints}
-                        fill="#4ade80"
-                        fillOpacity={0.95}
-                        stroke="rgba(0,0,0,0.35)"
-                        strokeWidth={0.6}
-                        isAnimationActive={false}
+                        <RechartsTooltip<number, string>
+                          cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
+                          content={(props: TooltipContentProps<number, string>) => (
+                            <ChartTooltip {...props} />
+                          )}
+                          wrapperStyle={{ transition: "none" }}
+                          animationDuration={0}
+                        />
+                        <Scatter
+                          name="Players"
+                          data={displayedPoints}
+                          shape={renderPoint}
+                          isAnimationActive={false}
                         />
                       </ScatterChart>
                     </ResponsiveContainer>
@@ -1361,10 +1394,10 @@ export default function DashboardPage() {
                               <button
                                 type="button"
                                 onClick={() => toggleSelectedPlayer(row)}
-                                aria-pressed={selectedPlayers.has(String(row.player_id ?? row.gamer_tag ?? ""))}
+                                aria-pressed={selectedPlayers.has(playerKey(row))}
                                 className="rounded-md border border-white/10 bg-black/40 p-1.5 text-foreground transition hover:border-white/20 hover:text-white"
                               >
-                                {selectedPlayers.has(String(row.player_id ?? row.gamer_tag ?? "")) ? (
+                                {selectedPlayers.has(playerKey(row)) ? (
                                   <SquareCheckIcon className="h-4 w-4" />
                                 ) : (
                                   <SquareIcon className="h-4 w-4" />
