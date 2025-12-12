@@ -182,6 +182,8 @@ function FilterPanel({
   onReset,
   allowMultiSeries,
   setAllowMultiSeries,
+  forceRefresh,
+  setForceRefresh,
   seriesOptions,
   selectedSeriesKey,
   onSelectSeries,
@@ -198,6 +200,8 @@ function FilterPanel({
   onReset: () => void;
   allowMultiSeries: boolean;
   setAllowMultiSeries: Dispatch<SetStateAction<boolean>>;
+  forceRefresh: boolean;
+  setForceRefresh: Dispatch<SetStateAction<boolean>>;
   seriesOptions: Array<{ key: string; label: string }>;
   selectedSeriesKey: string | null;
   onSelectSeries: (key: string) => void;
@@ -537,6 +541,17 @@ function FilterPanel({
                   setTournamentFilters({ ...tournamentFilters, slugOrUrl: event.target.value })
                 }
               />
+              <div className="mt-1 flex items-center justify-between text-[11px] text-foreground/60">
+                <span>Force live fetch?</span>
+                <button
+                  type="button"
+                  onClick={() => setForceRefresh((v) => !v)}
+                  aria-pressed={forceRefresh}
+                  className="rounded-md border border-white/10 bg-black/50 p-1.5 text-foreground transition hover:border-white/20 hover:text-white"
+                >
+                  {forceRefresh ? <SquareCheckIcon className="h-4 w-4" /> : <SquareIcon className="h-4 w-4" />}
+                </button>
+              </div>
             </label>
 
           <label className="flex flex-col gap-1 text-sm">
@@ -661,6 +676,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [allowMultiSeries, setAllowMultiSeries] = useState(false);
+  const [forceRefresh, setForceRefresh] = useState(false);
   const [seriesOptions, setSeriesOptions] = useState<Array<{ key: string; label: string }>>([]);
   const [selectedSeriesKey, setSelectedSeriesKey] = useState<string | null>(null);
   const [hideOutliers, setHideOutliers] = useState(false);
@@ -771,6 +787,7 @@ export default function DashboardPage() {
       months_back: String(monthsBack),
       limit: "0",
     });
+    if (forceRefresh) params.set("refresh", "true");
     if (tournamentFilters.state.trim()) {
       params.set("state", tournamentFilters.state.trim().toUpperCase());
     }
@@ -934,6 +951,7 @@ export default function DashboardPage() {
         limit: "0",
         videogame_id: DEFAULT_VIDEOGAME_ID,
       });
+      if (forceRefresh) params.set("refresh", "true");
       if (tournamentFilters.state.trim()) {
         params.set("state", tournamentFilters.state.trim().toUpperCase());
       }
@@ -1202,6 +1220,8 @@ export default function DashboardPage() {
               onReset={handleReset}
               allowMultiSeries={allowMultiSeries}
               setAllowMultiSeries={setAllowMultiSeries}
+              forceRefresh={forceRefresh}
+              setForceRefresh={setForceRefresh}
               seriesOptions={seriesOptions}
               selectedSeriesKey={selectedSeriesKey}
               onSelectSeries={(key) => {
@@ -1395,6 +1415,8 @@ export default function DashboardPage() {
             onReset={handleReset}
             allowMultiSeries={allowMultiSeries}
             setAllowMultiSeries={setAllowMultiSeries}
+            forceRefresh={forceRefresh}
+            setForceRefresh={setForceRefresh}
             seriesOptions={seriesOptions}
             selectedSeriesKey={selectedSeriesKey}
             onSelectSeries={(key) => {
