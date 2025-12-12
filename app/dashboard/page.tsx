@@ -768,10 +768,12 @@ export default function DashboardPage() {
   const buildTournamentQuery = (seriesKey?: string, allowMulti?: boolean) => {
     const monthsBack = TIMEFRAME_TO_MONTHS[tournamentFilters.timeframe] ?? 3;
     const params = new URLSearchParams({
-      state: tournamentFilters.state.trim().toUpperCase(),
       months_back: String(monthsBack),
       limit: "0",
     });
+    if (tournamentFilters.state.trim()) {
+      params.set("state", tournamentFilters.state.trim().toUpperCase());
+    }
     if (seriesKey) {
       params.set("series_key", seriesKey);
     } else {
@@ -888,11 +890,6 @@ export default function DashboardPage() {
       setChartData([]);
       return;
     }
-    if (viewType === "tournament" && !tournamentFilters.state.trim()) {
-      setError("Select a state to run the search.");
-      setChartData([]);
-      return;
-    }
 
     if (viewType === "state") {
       const params = buildStateQuery();
@@ -933,11 +930,13 @@ export default function DashboardPage() {
     // If a specific tournament slug/URL is provided, hit the search endpoint for that exact slug.
     if (slug) {
       const params = new URLSearchParams({
-        state: tournamentFilters.state.trim().toUpperCase(),
         months_back: String(monthsBack),
         limit: "0",
         videogame_id: DEFAULT_VIDEOGAME_ID,
       });
+      if (tournamentFilters.state.trim()) {
+        params.set("state", tournamentFilters.state.trim().toUpperCase());
+      }
       params.append("tournament_slug", slug);
       if (tournamentFilters.filterStates.trim()) {
         tournamentFilters.filterStates
@@ -945,6 +944,8 @@ export default function DashboardPage() {
           .map((s) => s.trim().toUpperCase())
           .filter(Boolean)
           .forEach((code) => params.append("filter_state", code));
+      } else if (tournamentFilters.state.trim()) {
+        params.set("filter_state", tournamentFilters.state.trim().toUpperCase());
       }
       maybeSet(params, "character", tournamentFilters.characters);
       maybeSet(params, "min_entrants", tournamentFilters.minEntrants);
