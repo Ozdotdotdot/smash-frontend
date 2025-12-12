@@ -1229,10 +1229,22 @@ export default function DashboardPage() {
           </div>
 
           <div className="rounded-xl border border-white/10 bg-black/30 p-6 backdrop-blur">
-            <h1 className="text-2xl font-semibold">Dashboard</h1>
-            <p className="mt-2 text-sm text-foreground/70">
-              Pick filters, then render a state-wide view of weighted win rate vs opponent strength.
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-semibold">Dashboard</h1>
+                <p className="mt-2 text-sm text-foreground/70">
+                  Pick filters, then render a state-wide view of weighted win rate vs opponent strength.
+                </p>
+              </div>
+              <a
+                href="https://docs.smash.watch"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-md border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-foreground shadow-lg shadow-black/20 backdrop-blur transition hover:border-white/25 hover:bg-white/20"
+              >
+                Help
+              </a>
+            </div>
             <div className="mt-4 space-y-3">
               {error && (
                 <div className="rounded-md border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
