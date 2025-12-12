@@ -1073,7 +1073,7 @@ export default function DashboardPage() {
       >
         <div className="site-nav__inner">
           <Link
-            href="/"
+            href="/?skipSplash=1"
             className="site-nav__brand"
             onClick={() => setNavOpen(false)}
           >

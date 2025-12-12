@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   CartesianGrid,
@@ -103,7 +104,11 @@ function ChartTooltip({ active, payload }: TooltipContentProps<number, string>) 
 }
 
 export default function Home() {
-  const [phase, setPhase] = useState<SplashPhase>("full");
+  const searchParams = useSearchParams();
+  const skipSplash =
+    searchParams.get("skipSplash") === "1" || searchParams.get("skipSplash") === "true";
+
+  const [phase, setPhase] = useState<SplashPhase>(skipSplash ? "hidden" : "full");
   const frames = ["smash.watch", "smas.wtch", "sma.wch", "ss.wh", "s.w"];
   const [frameIndex, setFrameIndex] = useState(0);
   const [navOpen, setNavOpen] = useState(false);
@@ -192,6 +197,10 @@ export default function Home() {
   const explainer = sourceExplainers[selectedSource.id] ?? sourceExplainers.default;
 
   useEffect(() => {
+    if (skipSplash) {
+      setPhase("hidden");
+      return;
+    }
     const firstFrameDuration = 1400; // linger a bit longer on the full name
     const frameDuration = 140; // quick collapse progression
 
@@ -223,7 +232,7 @@ export default function Home() {
       clearTimeout(shrinkTimer);
       clearTimeout(hideTimer);
     };
-  }, []);
+  }, [skipSplash]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -349,11 +358,11 @@ export default function Home() {
             .join(" ")}
         >
           <div className="site-nav__inner">
-            <Link
-              href="/"
-              className="site-nav__brand"
-              onClick={() => setNavOpen(false)}
-            >
+          <Link
+            href="/?skipSplash=1"
+            className="site-nav__brand"
+            onClick={() => setNavOpen(false)}
+          >
               <span className="site-nav__logo-dot" />
               <span className="site-nav__wordmark">smash.watch</span>
             </Link>
