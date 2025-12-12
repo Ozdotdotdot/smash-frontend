@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { Info } from "lucide-react";
 import {
   CartesianGrid,
@@ -14,6 +15,7 @@ import {
 } from "recharts";
 
 import Particles from "@/components/Particles";
+import LetterSwapForward from "@/components/fancy/text/letter-swap-forward-anim";
 import {
   Tooltip,
   TooltipContent,
@@ -628,6 +630,10 @@ function FilterPanel({
 export default function DashboardPage() {
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
+  const [navStuck, setNavStuck] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set());
   const [viewType, setViewType] = useState<ViewType>("state");
   const [stateFilters, setStateFilters] = useState<StateFilters>({
     region: "",
@@ -662,6 +668,21 @@ export default function DashboardPage() {
   const [seriesOptions, setSeriesOptions] = useState<Array<{ key: string; label: string }>>([]);
   const [selectedSeriesKey, setSelectedSeriesKey] = useState<string | null>(null);
   const [hideOutliers, setHideOutliers] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 900) setNavOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleStick = () => setNavStuck(window.scrollY > 4);
+    handleStick();
+    window.addEventListener("scroll", handleStick);
+    return () => window.removeEventListener("scroll", handleStick);
+  }, []);
 
   const selectedMonthsBack = useMemo(
     () => TIMEFRAME_TO_MONTHS[stateFilters.timeframe] ?? 3,
@@ -703,6 +724,27 @@ export default function DashboardPage() {
       return strength <= upperBound;
     });
   }, [chartPoints, hideOutliers]);
+
+  const playerKey = (row: PlayerPoint) => String(row.player_id ?? row.gamer_tag ?? "");
+
+  const filteredRows = useMemo(() => {
+    const term = searchQuery.trim().toLowerCase();
+    if (!term) return displayedPoints;
+    return displayedPoints.filter((row) =>
+      (row.gamer_tag ?? "").toLowerCase().includes(term),
+    );
+  }, [displayedPoints, searchQuery]);
+
+  const toggleSelectedPlayer = (row: PlayerPoint) => {
+    const key = playerKey(row);
+    if (!key) return;
+    setSelectedPlayers((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   const buildStateQuery = () => {
     const params = new URLSearchParams({
@@ -1025,6 +1067,40 @@ export default function DashboardPage() {
     );
   };
 
+  const StarPoint = ({ cx, cy }: { cx?: number; cy?: number }) => {
+    if (cx === undefined || cy === undefined) return null;
+    const size = 18;
+    return (
+      <image
+        x={cx - size / 2}
+        y={cy - size / 2}
+        width={size}
+        height={size}
+        href="/star-icon.svg"
+        aria-hidden
+      />
+    );
+  };
+
+  const renderPoint = (props: { cx?: number; cy?: number; payload?: any }) => {
+    const { cx, cy, payload } = props;
+    const row = payload as PlayerPoint | undefined;
+    if (!row || cx === undefined || cy === undefined) return null;
+    const isSelected = selectedPlayers.has(playerKey(row));
+    if (isSelected) return <StarPoint cx={cx} cy={cy} />;
+    return (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={4.5}
+        fill="#4ade80"
+        fillOpacity={0.95}
+        stroke="rgba(0,0,0,0.35)"
+        strokeWidth={0.6}
+      />
+    );
+  };
+
   return (
     <div className="relative min-h-screen bg-background text-foreground">
       {/* Particles Background */}
@@ -1042,6 +1118,109 @@ export default function DashboardPage() {
           className=""
         />
       </div>
+
+      <nav
+        className={[
+          "site-nav",
+          "site-nav--visible",
+          navStuck ? "site-nav--stuck" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
+        <div className="site-nav__inner">
+          <Link
+            href="/"
+            className="site-nav__brand"
+            onClick={() => setNavOpen(false)}
+          >
+            <span className="site-nav__logo-dot" />
+            <span className="site-nav__wordmark">smash.watch</span>
+          </Link>
+          <div className="site-nav__links site-nav__links--desktop">
+            <Link href="/dashboard" className="site-nav__link" onClick={() => setNavOpen(false)}>
+              <LetterSwapForward label="Dashboard" staggerDuration={0} />
+            </Link>
+            <a
+              href="https://docs.smash.watch"
+              className="site-nav__link"
+              onClick={() => setNavOpen(false)}
+            >
+              <LetterSwapForward label="Docs" staggerDuration={0} />
+            </a>
+          </div>
+          <a
+            className="site-nav__cta site-nav__cta--desktop"
+            href="https://github.com/ozdotdotdot/smashDA"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <svg
+              aria-hidden
+              className="site-nav__star"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 3.5 14.9 9l5.6.8-4 3.9.9 5.6L12 16.7 6.6 19.3l.9-5.6-4-3.9L9 9l3-5.5Z" />
+            </svg>
+            Star on GitHub
+          </a>
+          <button
+            className="site-nav__toggle"
+            type="button"
+            aria-expanded={navOpen}
+            aria-label="Toggle navigation"
+            aria-controls="site-nav-mobile"
+            onClick={() => setNavOpen((v) => !v)}
+          >
+            <span className="site-nav__toggle-line" />
+            <span className="site-nav__toggle-line" />
+          </button>
+        </div>
+        <div
+          id="site-nav-mobile"
+          className={`site-nav__mobile ${navOpen ? "site-nav__mobile--open" : ""}`}
+          aria-hidden={!navOpen}
+        >
+          <div className="site-nav__links site-nav__links--mobile">
+            <Link href="/dashboard" className="site-nav__link" onClick={() => setNavOpen(false)}>
+              <LetterSwapForward label="Dashboard" staggerDuration={0} />
+            </Link>
+            <a
+              href="https://docs.smash.watch"
+              className="site-nav__link"
+              onClick={() => setNavOpen(false)}
+            >
+              <LetterSwapForward label="Docs" staggerDuration={0} />
+            </a>
+          </div>
+          <a
+            className="site-nav__cta site-nav__cta--mobile"
+            href="https://github.com/ozdotdotdot/smashDA"
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => setNavOpen(false)}
+          >
+            <svg
+              aria-hidden
+              className="site-nav__star"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 3.5 14.9 9l5.6.8-4 3.9.9 5.6L12 16.7 6.6 19.3l.9-5.6-4-3.9L9 9l3-5.5Z" />
+            </svg>
+            Star on GitHub
+          </a>
+        </div>
+      </nav>
 
       <div className="relative z-10 flex min-h-screen">
         <aside
@@ -1107,10 +1286,22 @@ export default function DashboardPage() {
           </div>
 
           <div className="rounded-xl border border-white/10 bg-black/30 p-6 backdrop-blur">
-            <h1 className="text-2xl font-semibold">Dashboard</h1>
-            <p className="mt-2 text-sm text-foreground/70">
-              Pick filters, then render a state-wide view of weighted win rate vs opponent strength.
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-semibold">Dashboard</h1>
+                <p className="mt-2 text-sm text-foreground/70">
+                  Pick filters, then render a state-wide view of weighted win rate vs opponent strength.
+                </p>
+              </div>
+              <a
+                href="https://docs.smash.watch"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-md border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-foreground shadow-lg shadow-black/20 backdrop-blur transition hover:border-white/25 hover:bg-white/20"
+              >
+                Help
+              </a>
+            </div>
             <div className="mt-4 space-y-3">
               {error && (
                 <div className="rounded-md border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
@@ -1150,35 +1341,43 @@ export default function DashboardPage() {
                           tickLine={false}
                           tick={{ fontSize: 12 }}
                         />
-        <RechartsTooltip<number, string>
-          cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
-          content={(props: TooltipContentProps<number, string>) => (
-            <ChartTooltip {...props} />
-          )}
-          wrapperStyle={{ transition: "none" }}
-          animationDuration={0}
-        />
-                      <Scatter
-                        name="Players"
-                        data={displayedPoints}
-                        fill="#4ade80"
-                        fillOpacity={0.95}
-                        stroke="rgba(0,0,0,0.35)"
-                        strokeWidth={0.6}
-                        isAnimationActive={false}
+                        <RechartsTooltip<number, string>
+                          cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
+                          content={(props: TooltipContentProps<number, string>) => (
+                            <ChartTooltip {...props} />
+                          )}
+                          wrapperStyle={{ transition: "none" }}
+                          animationDuration={0}
+                        />
+                        <Scatter
+                          name="Players"
+                          data={displayedPoints}
+                          shape={renderPoint}
+                          isAnimationActive={false}
                         />
                       </ScatterChart>
                     </ResponsiveContainer>
                   </div>
 
                   <div className="mt-4 overflow-hidden rounded-lg border border-white/10 bg-black/30">
-                    <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs uppercase tracking-[0.2em] text-foreground/60">
-                      <span>Players</span>
-                      <span>{displayedPoints.length} rows</span>
+                    <div className="flex flex-wrap items-center gap-3 border-b border-white/10 px-4 py-3 text-xs uppercase tracking-[0.2em] text-foreground/60">
+                      <div className="flex items-center gap-3">
+                        <span>Players</span>
+                        <input
+                          type="search"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Search player"
+                          className="w-44 rounded-md border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-normal uppercase tracking-[0.08em] text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40 focus:bg-white/10"
+                          aria-label="Search players by gamer tag"
+                        />
+                      </div>
+                      <span className="ml-auto">{filteredRows.length} rows</span>
                     </div>
                     <Table>
                       <TableHeader className="bg-white/5 text-sm font-medium">
                         <TableRow className="border-b border-white/5">
+                          <TableHead className="w-12 px-4 py-3 text-left">Select</TableHead>
                           <TableHead className="px-4 py-3 text-left">Player</TableHead>
                           <TableHead className="px-4 py-3 text-left">Win rate</TableHead>
                           <TableHead className="px-4 py-3 text-left">Opp strength</TableHead>
@@ -1186,11 +1385,25 @@ export default function DashboardPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody className="text-sm">
-                        {displayedPoints.map((row, idx) => (
+                        {filteredRows.map((row, idx) => (
                           <TableRow
                             key={`${row.player_id ?? row.gamer_tag ?? "row"}-${idx}`}
                             className="border-b border-white/5 last:border-0"
                           >
+                            <TableCell className="px-4 py-3">
+                              <button
+                                type="button"
+                                onClick={() => toggleSelectedPlayer(row)}
+                                aria-pressed={selectedPlayers.has(playerKey(row))}
+                                className="rounded-md border border-white/10 bg-black/40 p-1.5 text-foreground transition hover:border-white/20 hover:text-white"
+                              >
+                                {selectedPlayers.has(playerKey(row)) ? (
+                                  <SquareCheckIcon className="h-4 w-4" />
+                                ) : (
+                                  <SquareIcon className="h-4 w-4" />
+                                )}
+                              </button>
+                            </TableCell>
                             <TableCell className="px-4 py-3 font-semibold">
                               {row.gamer_tag ?? "Unknown"}
                             </TableCell>
