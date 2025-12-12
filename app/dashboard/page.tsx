@@ -1081,6 +1081,37 @@ export default function DashboardPage() {
     );
   };
 
+  const renderPoint = (props: any) => {
+    const { cx, cy, payload } = props ?? {};
+    if (cx === undefined || cy === undefined) return <g />;
+    const row = payload as PlayerPoint | undefined;
+    const isSelected = row ? selectedPlayers.has(playerKey(row)) : false;
+    if (isSelected) {
+      const size = 18;
+      return (
+        <image
+          x={cx - size / 2}
+          y={cy - size / 2}
+          width={size}
+          height={size}
+          href="/star-icon.svg"
+          aria-hidden
+        />
+      );
+    }
+    return (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={4.5}
+        fill="#4ade80"
+        fillOpacity={0.95}
+        stroke="rgba(0,0,0,0.35)"
+        strokeWidth={0.6}
+      />
+    );
+  };
+
   return (
     <div className="relative min-h-screen bg-background text-foreground">
       {/* Particles Background */}
@@ -1334,10 +1365,7 @@ export default function DashboardPage() {
                       <Scatter
                         name="Players"
                         data={displayedPoints}
-                        fill="#4ade80"
-                        fillOpacity={0.95}
-                        stroke="rgba(0,0,0,0.35)"
-                        strokeWidth={0.6}
+                        shape={renderPoint}
                         isAnimationActive={false}
                         />
                       </ScatterChart>
