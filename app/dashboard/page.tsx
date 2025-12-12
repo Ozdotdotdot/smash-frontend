@@ -782,8 +782,6 @@ export default function DashboardPage() {
         .map((s) => s.trim().toUpperCase())
         .filter(Boolean)
         .forEach((code) => params.append("filter_state", code));
-    } else if (stateFilters.region.trim()) {
-      params.set("filter_state", stateFilters.region.trim().toUpperCase());
     }
     return params;
   };
@@ -832,8 +830,6 @@ export default function DashboardPage() {
         .map((s) => s.trim().toUpperCase())
         .filter(Boolean)
         .forEach((code) => params.append("filter_state", code));
-    } else if (tournamentFilters.state.trim()) {
-      params.set("filter_state", tournamentFilters.state.trim().toUpperCase());
     }
     if (allowMulti) {
       params.set("allow_multi", "true");
