@@ -633,6 +633,7 @@ export default function DashboardPage() {
   const [navOpen, setNavOpen] = useState(false);
   const [navStuck, setNavStuck] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set());
   const [viewType, setViewType] = useState<ViewType>("state");
   const [stateFilters, setStateFilters] = useState<StateFilters>({
     region: "",
@@ -731,6 +732,17 @@ export default function DashboardPage() {
       (row.gamer_tag ?? "").toLowerCase().includes(term),
     );
   }, [displayedPoints, searchQuery]);
+
+  const toggleSelectedPlayer = (row: PlayerPoint) => {
+    const key = String(row.player_id ?? row.gamer_tag ?? "");
+    if (!key) return;
+    setSelectedPlayers((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   const buildStateQuery = () => {
     const params = new URLSearchParams({
@@ -1332,6 +1344,7 @@ export default function DashboardPage() {
                     <Table>
                       <TableHeader className="bg-white/5 text-sm font-medium">
                         <TableRow className="border-b border-white/5">
+                          <TableHead className="w-12 px-4 py-3 text-left">Select</TableHead>
                           <TableHead className="px-4 py-3 text-left">Player</TableHead>
                           <TableHead className="px-4 py-3 text-left">Win rate</TableHead>
                           <TableHead className="px-4 py-3 text-left">Opp strength</TableHead>
@@ -1344,6 +1357,20 @@ export default function DashboardPage() {
                             key={`${row.player_id ?? row.gamer_tag ?? "row"}-${idx}`}
                             className="border-b border-white/5 last:border-0"
                           >
+                            <TableCell className="px-4 py-3">
+                              <button
+                                type="button"
+                                onClick={() => toggleSelectedPlayer(row)}
+                                aria-pressed={selectedPlayers.has(String(row.player_id ?? row.gamer_tag ?? ""))}
+                                className="rounded-md border border-white/10 bg-black/40 p-1.5 text-foreground transition hover:border-white/20 hover:text-white"
+                              >
+                                {selectedPlayers.has(String(row.player_id ?? row.gamer_tag ?? "")) ? (
+                                  <SquareCheckIcon className="h-4 w-4" />
+                                ) : (
+                                  <SquareIcon className="h-4 w-4" />
+                                )}
+                              </button>
+                            </TableCell>
                             <TableCell className="px-4 py-3 font-semibold">
                               {row.gamer_tag ?? "Unknown"}
                             </TableCell>
