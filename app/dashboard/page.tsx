@@ -187,6 +187,8 @@ function FilterPanel({
   onSelectSeries,
   hideOutliers,
   setHideOutliers,
+  forceRefreshSlug,
+  setForceRefreshSlug,
 }: {
   viewType: ViewType;
   setViewType: (value: ViewType) => void;
@@ -203,6 +205,8 @@ function FilterPanel({
   onSelectSeries: (key: string) => void;
   hideOutliers: boolean;
   setHideOutliers: (value: boolean) => void;
+  forceRefreshSlug: boolean;
+  setForceRefreshSlug: Dispatch<SetStateAction<boolean>>;
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -539,6 +543,22 @@ function FilterPanel({
               />
             </label>
 
+            <div className="flex items-center justify-between rounded-md border border-white/10 bg-black/30 px-3 py-2 text-xs text-foreground/80">
+              <span>Force live refresh (skip cache)</span>
+              <button
+                type="button"
+                onClick={() => setForceRefreshSlug((v) => !v)}
+                aria-pressed={forceRefreshSlug}
+                className="rounded-md border border-white/10 bg-black/50 p-1.5 text-foreground transition hover-border-white/20 hover:text-white"
+              >
+                {forceRefreshSlug ? (
+                  <SquareCheckIcon className="h-4 w-4" />
+                ) : (
+                  <SquareIcon className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-foreground/70">Timeframe</span>
             <select
@@ -658,10 +678,12 @@ export default function DashboardPage() {
   const [chartData, setChartData] = useState<PlayerPoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [allowMultiSeries, setAllowMultiSeries] = useState(false);
   const [seriesOptions, setSeriesOptions] = useState<Array<{ key: string; label: string }>>([]);
   const [selectedSeriesKey, setSelectedSeriesKey] = useState<string | null>(null);
   const [hideOutliers, setHideOutliers] = useState(false);
+  const [forceRefreshSlug, setForceRefreshSlug] = useState(false);
 
   const selectedMonthsBack = useMemo(
     () => TIMEFRAME_TO_MONTHS[stateFilters.timeframe] ?? 3,
@@ -916,47 +938,64 @@ export default function DashboardPage() {
 
     // If a specific tournament slug/URL is provided, hit the search endpoint for that exact slug.
     if (slug) {
-      const params = new URLSearchParams({
+      const baseParams = new URLSearchParams({
         limit: "0",
         videogame_id: DEFAULT_VIDEOGAME_ID,
       });
-      if (hasState) params.set("state", tournamentFilters.state.trim().toUpperCase());
-      params.append("tournament_slug", slug);
+      if (hasState) baseParams.set("state", tournamentFilters.state.trim().toUpperCase());
+      baseParams.append("tournament_slug", slug);
       if (tournamentFilters.filterStates.trim()) {
         tournamentFilters.filterStates
           .split(",")
           .map((s) => s.trim().toUpperCase())
           .filter(Boolean)
-          .forEach((code) => params.append("filter_state", code));
+          .forEach((code) => baseParams.append("filter_state", code));
       }
-      maybeSet(params, "character", tournamentFilters.characters);
-      maybeSet(params, "min_entrants", tournamentFilters.minEntrants);
-      maybeSet(params, "max_entrants", tournamentFilters.maxEntrants);
-      maybeSet(params, "min_max_event_entrants", tournamentFilters.minMaxEventEntrants);
-      maybeSet(params, "large_event_threshold", tournamentFilters.largeEventThreshold);
-      maybeSet(params, "min_large_event_share", tournamentFilters.minLargeEventShare);
-      if (tournamentFilters.startAfter) params.set("start_after", tournamentFilters.startAfter);
+      maybeSet(baseParams, "character", tournamentFilters.characters);
+      maybeSet(baseParams, "min_entrants", tournamentFilters.minEntrants);
+      maybeSet(baseParams, "max_entrants", tournamentFilters.maxEntrants);
+      maybeSet(baseParams, "min_max_event_entrants", tournamentFilters.minMaxEventEntrants);
+      maybeSet(baseParams, "large_event_threshold", tournamentFilters.largeEventThreshold);
+      maybeSet(baseParams, "min_large_event_share", tournamentFilters.minLargeEventShare);
+      if (tournamentFilters.startAfter) baseParams.set("start_after", tournamentFilters.startAfter);
 
-      setSeriesOptions([]);
-      setSelectedSeriesKey(null);
-      setIsLoading(true);
-      setError(null);
-    fetch(`/api/search/by-slug?${params.toString()}`, { cache: "no-store" })
-      .then((res) => {
+      const fetchSlugData = async (refresh: boolean) => {
+        const params = new URLSearchParams(baseParams);
+        if (refresh) params.set("refresh", "true");
+        setStatusMessage(
+          refresh
+            ? "No cached data — fetching live from start.gg (may take up to a minute)..."
+            : "Checking local cache for this tournament..."
+        );
+        const res = await fetch(`/api/search/by-slug?${params.toString()}`, { cache: "no-store" });
         if (!res.ok) throw new Error(`API error ${res.status}`);
-        return res.json();
-      })
-      .then((json: { results?: PlayerPoint[] }) => {
-        setChartData(json.results ?? []);
-        if ((json.results ?? []).length === 0) {
-          setError("No data found. Check your state parameter and filters.");
+        return (await res.json()) as { results?: PlayerPoint[] };
+      };
+
+      const run = async () => {
+        setSeriesOptions([]);
+        setSelectedSeriesKey(null);
+        setIsLoading(true);
+        setError(null);
+        try {
+          let json = await fetchSlugData(forceRefreshSlug);
+          if (!forceRefreshSlug && (json.results ?? []).length === 0) {
+            json = await fetchSlugData(true);
+          }
+          setChartData(json.results ?? []);
+          if ((json.results ?? []).length === 0) {
+            setError("No data found. If this is a fresh bracket, ensure standings/sets are published.");
+          }
+        } catch (err) {
+          setError(`${(err as Error).message} — check your tournament link and filters.`);
+          setChartData([]);
+        } finally {
+          setIsLoading(false);
+          setStatusMessage(null);
         }
-      })
-      .catch((err) => {
-        setError(`${(err as Error).message} — check your state parameter and filters.`);
-        setChartData([]);
-      })
-        .finally(() => setIsLoading(false));
+      };
+
+      void run();
       return;
     }
 
@@ -998,6 +1037,8 @@ export default function DashboardPage() {
     setSeriesOptions([]);
     setSelectedSeriesKey(null);
     setHideOutliers(false);
+    setForceRefreshSlug(false);
+    setStatusMessage(null);
   };
 
   const ChartTooltip = ({ active, payload }: TooltipContentProps<number, string>) => {
@@ -1089,6 +1130,8 @@ export default function DashboardPage() {
               }}
               hideOutliers={hideOutliers}
               setHideOutliers={setHideOutliers}
+              forceRefreshSlug={forceRefreshSlug}
+              setForceRefreshSlug={setForceRefreshSlug}
             />
           )}
         </aside>
@@ -1116,6 +1159,9 @@ export default function DashboardPage() {
                 <div className="rounded-md border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
                   {error}
                 </div>
+              )}
+              {statusMessage && (
+                <div className="text-sm text-foreground/70">{statusMessage}</div>
               )}
               {isLoading && (
                 <div className="text-sm text-foreground/70">Loading data…</div>
@@ -1270,6 +1316,8 @@ export default function DashboardPage() {
             }}
             hideOutliers={hideOutliers}
             setHideOutliers={setHideOutliers}
+            forceRefreshSlug={forceRefreshSlug}
+            setForceRefreshSlug={setForceRefreshSlug}
           />
         </aside>
       </div>
