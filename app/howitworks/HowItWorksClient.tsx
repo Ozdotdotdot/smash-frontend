@@ -2,9 +2,17 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import LetterSwapForward from "@/components/fancy/text/letter-swap-forward-anim";
 
-export default function HowItWorksClient() {
+export default function HowItWorksClient({
+  title,
+  markdown,
+}: {
+  title: string;
+  markdown: string;
+}) {
   const [navOpen, setNavOpen] = useState(false);
   const [navStuck, setNavStuck] = useState(false);
 
@@ -139,13 +147,10 @@ export default function HowItWorksClient() {
 
       <main className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-6 pb-24 pt-28 sm:pt-32">
         <header className="space-y-4">
-          <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
-            How smash.watch works
-          </h1>
+          <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">{title}</h1>
           <p className="text-lg text-foreground/75">
-            A practical walkthrough of the end-to-end pipeline: where the data comes from, how it
-            gets cleaned and filtered, what the metrics mean, and how the frontend turns it into the
-            visuals you see.
+            A technical walkthrough of the end-to-end pipeline: collection → processing → API →
+            visualization.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link className="btn" href="/dashboard">
@@ -157,117 +162,111 @@ export default function HowItWorksClient() {
           </div>
         </header>
 
-        <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">Big picture</h2>
-          <p className="text-foreground/75">
-            Smash Watch is built around a simple idea: rank performance by accounting for opponent
-            strength. Raw win-rate alone is noisy (farm weak brackets, inflate numbers), so the
-            pipeline estimates how strong your opposition was and weights results accordingly.
-          </p>
+        <section className="space-y-5">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              h2: ({ node, ...props }) => <h2 className="text-2xl font-semibold" {...props} />,
+              h3: ({ node, ...props }) => <h3 className="text-xl font-semibold" {...props} />,
+              p: ({ node, ...props }) => <p className="text-foreground/75" {...props} />,
+              ul: ({ node, ...props }) => (
+                <ul className="list-disc space-y-2 pl-5 text-foreground/75" {...props} />
+              ),
+              ol: ({ node, ...props }) => (
+                <ol className="list-decimal space-y-2 pl-5 text-foreground/75" {...props} />
+              ),
+              li: ({ node, ...props }) => <li className="marker:text-foreground/50" {...props} />,
+              code: ({ node, className, children, ...props }) => {
+                const text = typeof children === "string" ? children : "";
+                const isInline = !text.includes("\n");
+                return (
+                  <code
+                    className={
+                      isInline
+                        ? [
+                            "rounded bg-white/10 px-1.5 py-0.5 text-sm text-foreground/90",
+                            className ?? "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")
+                        : ["text-sm text-foreground/90", className ?? ""]
+                            .filter(Boolean)
+                            .join(" ")
+                    }
+                    {...props}
+                  >
+                    {children}
+                  </code>
+                );
+              },
+              pre: ({ node, ...props }) => (
+                <pre
+                  className="overflow-x-auto rounded-xl border border-white/10 bg-black/30 p-4 text-sm text-foreground/90"
+                  {...props}
+                />
+              ),
+              a: ({ node, href, ...props }) => {
+                if (!href) return <a className="underline underline-offset-4" {...props} />;
+                if (href.startsWith("/")) {
+                  return <Link className="underline underline-offset-4" href={href} {...props} />;
+                }
+                return (
+                  <a
+                    className="underline underline-offset-4"
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    {...props}
+                  />
+                );
+              },
+              strong: ({ node, ...props }) => (
+                <strong className="font-semibold text-foreground" {...props} />
+              ),
+              blockquote: ({ node, ...props }) => (
+                <blockquote
+                  className="border-l-2 border-white/10 pl-4 text-foreground/75"
+                  {...props}
+                />
+              ),
+            }}
+          >
+            {markdown}
+          </ReactMarkdown>
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">Pipeline overview</h2>
-          <ol className="list-decimal space-y-3 pl-5 text-foreground/75">
-            <li>
-              <span className="font-medium text-foreground">Ingest</span>: pull event and set data
-              from tournament sources.
-            </li>
-            <li>
-              <span className="font-medium text-foreground">Normalize</span>: clean identifiers,
-              unify player tags, and standardize fields (dates, states, entrants, etc).
-            </li>
-            <li>
-              <span className="font-medium text-foreground">Filter</span>: apply region/timeframe
-              rules, tournament-size thresholds, and optional character constraints.
-            </li>
-            <li>
-              <span className="font-medium text-foreground">Score</span>: compute per-player metrics
-              like weighted win rate and opponent strength.
-            </li>
-            <li>
-              <span className="font-medium text-foreground">Serve</span>: expose aggregated results
-              through the API endpoints this frontend consumes.
-            </li>
-            <li>
-              <span className="font-medium text-foreground">Visualize</span>: render scatterplots
-              and tables with interactive filtering.
-            </li>
-          </ol>
-        </section>
-
-        <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">Key metrics</h2>
+          <h2 className="text-2xl font-semibold">Key metrics at a glance</h2>
           <div className="space-y-4 text-foreground/75">
             <div className="rounded-xl border border-white/10 bg-white/5 p-5">
               <div className="text-base font-semibold text-foreground">Weighted win rate</div>
               <p className="mt-2">
-                A win-rate that rewards wins over stronger opponents more than wins over weaker
-                opponents. This helps separate “wins because you played killers” from “wins because
-                you played mostly new players”.
+                A win-rate adjusted for opponent quality, so wins against strong opponents count
+                more than wins against weak opposition.
               </p>
             </div>
             <div className="rounded-xl border border-white/10 bg-white/5 p-5">
               <div className="text-base font-semibold text-foreground">Opponent strength</div>
               <p className="mt-2">
-                A summary of the typical strength of opponents a player faced in the selected slice
-                (state, timeframe, series, etc). This is what makes the chart useful: you can see
-                who performs well relative to the difficulty of their matches.
+                A summary of the strength of the opponents you faced in the selected slice (state,
+                timeframe, series). This is what makes the scatterplot interpretable.
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+              <div className="text-base font-semibold text-foreground">Filters</div>
+              <p className="mt-2">
+                Filters change what data is included in the calculation (not just what’s shown):
+                state/region, timeframe, and event-size thresholds all affect the final numbers.
               </p>
             </div>
           </div>
         </section>
 
-        <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">Filtering logic</h2>
-          <p className="text-foreground/75">
-            Filters are designed to answer real questions quickly. They control what data is
-            included in the computations, not just what’s displayed.
-          </p>
-          <ul className="list-disc space-y-2 pl-5 text-foreground/75">
-            <li>
-              <span className="font-medium text-foreground">Region/state</span>: restrict to a
-              geographic area to get a true “local” view.
-            </li>
-            <li>
-              <span className="font-medium text-foreground">Timeframe</span>: keep results current
-              and reduce historical noise.
-            </li>
-            <li>
-              <span className="font-medium text-foreground">Event thresholds</span>: ignore tiny
-              tournaments when you want more stable signals.
-            </li>
-            <li>
-              <span className="font-medium text-foreground">Characters</span>: optionally slice by
-              character usage (when available in the source data).
-            </li>
-          </ul>
-        </section>
-
-        <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">What to look for on the chart</h2>
-          <ul className="list-disc space-y-2 pl-5 text-foreground/75">
-            <li>
-              High <span className="font-medium text-foreground">weighted win rate</span> and high{" "}
-              <span className="font-medium text-foreground">opponent strength</span> often indicates
-              top contenders.
-            </li>
-            <li>
-              High weighted win rate but low opponent strength can mean a player is farming smaller
-              locals, or is simply underrated and hasn’t played many killers yet.
-            </li>
-            <li>
-              Lower weighted win rate with high opponent strength can still be valuable: it may
-              represent players consistently attending stacked events.
-            </li>
-          </ul>
-        </section>
-
         <section className="space-y-4 rounded-2xl border border-white/10 bg-black/20 p-6">
           <h2 className="text-2xl font-semibold">Want the gritty details?</h2>
           <p className="text-foreground/75">
-            This page is the conceptual overview. If you want the exact definitions, edge cases, and
-            data caveats, the docs go deeper.
+            This page is the architectural overview. The docs go deeper on definitions, caveats, and
+            usage.
           </p>
           <div className="flex flex-wrap gap-3">
             <a className="btn" href="https://docs.smash.watch">
@@ -282,4 +281,3 @@ export default function HowItWorksClient() {
     </div>
   );
 }
-
