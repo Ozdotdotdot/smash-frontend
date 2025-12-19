@@ -603,11 +603,13 @@ export default function Home() {
                 body="Are you looking to figure out how to use the dashboard? Start with the docs and walkthroughs."
               />
             </a>
-            <SpotlightCard
-              title="How it works"
-              subtitle="Curious about the pipeline?"
-              body="Want to learn about how it all works? Peek at the data flow, metrics, and filtering logic."
-            />
+            <Link href="/howitworks" className="spotlight-card-link">
+              <SpotlightCard
+                title="How it works"
+                subtitle="Curious about the pipeline?"
+                body="Want to learn about how it all works? Peek at the data flow, metrics, and filtering logic."
+              />
+            </Link>
             <SpotlightCard
               title="About us"
               subtitle="Behind the scenes"
