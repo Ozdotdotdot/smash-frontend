@@ -10,20 +10,29 @@ export const metadata: Metadata = {
     "An end-to-end overview of Smash Watch: data sources, pipeline stages, metrics, and filtering logic.",
 };
 
-function parseMarkdownTitle(markdown: string) {
-  const lines = markdown.split(/\r?\n/);
-  const firstLine = lines[0] ?? "";
-  if (!firstLine.startsWith("# ")) return { title: "How it works", body: markdown.trim() };
+function normalizeInlineSvg(svgSource: string) {
+  const start = svgSource.indexOf("<svg");
+  if (start === -1) return "";
 
-  const title = firstLine.slice(2).trim() || "How it works";
-  let bodyLines = lines.slice(1);
-  while (bodyLines.length > 0 && bodyLines[0]?.trim() === "") bodyLines = bodyLines.slice(1);
-  return { title, body: bodyLines.join("\n").trim() };
+  let svg = svgSource.slice(start).trim();
+
+  svg = svg.replace(/^<svg\b/, `<svg`);
+
+  // Drop fixed sizing so CSS can make it responsive.
+  svg = svg.replace(/\swidth="[^"]*"/, "").replace(/\sheight="[^"]*"/, "");
+
+  // Add styling + accessibility to the root element.
+  svg = svg.replace(
+    /^<svg\b/,
+    `<svg class="howitworks-svg" style="width:100%;height:auto;display:block;" role="img" aria-label="How smash.watch works"`,
+  );
+
+  return svg;
 }
 
 export default async function HowItWorksPage() {
-  const mdPath = path.join(process.cwd(), "how_it_works.md");
-  const markdown = await readFile(mdPath, "utf8");
-  const { title, body } = parseMarkdownTitle(markdown);
-  return <HowItWorksClient title={title} markdown={body} />;
+  const svgPath = path.join(process.cwd(), "app", "howitworks", "how-it-works-simple.svg");
+  const svgSource = await readFile(svgPath, "utf8");
+  const svgMarkup = normalizeInlineSvg(svgSource);
+  return <HowItWorksClient svgMarkup={svgMarkup} />;
 }
