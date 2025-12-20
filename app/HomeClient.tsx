@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -117,6 +118,40 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
   const [phase, setPhase] = useState<SplashPhase>(() =>
     initialSkipSplash ? "hidden" : "full"
   );
+  const foxFrames = ["/fox-moving-1.png", "/fox-moving-2.png", "/fox-moving-3.png"];
+  const foxStanding = "/fox-standing.png";
+  const foxShine = "/fox-shine.png";
+  const [foxSrc, setFoxSrc] = useState<string>(foxStanding);
+  const foxTimer = useRef<NodeJS.Timeout | null>(null);
+  const foxFrameIndex = useRef(0);
+
+  const startFoxAnim = () => {
+    if (foxTimer.current) return;
+    foxFrameIndex.current = 0;
+    setFoxSrc(foxFrames[foxFrameIndex.current]);
+    foxTimer.current = setInterval(() => {
+      foxFrameIndex.current = (foxFrameIndex.current + 1) % foxFrames.length;
+      setFoxSrc(foxFrames[foxFrameIndex.current]);
+    }, 180);
+  };
+
+  const stopFoxAnim = () => {
+    if (foxTimer.current) {
+      clearInterval(foxTimer.current);
+      foxTimer.current = null;
+    }
+    setFoxSrc(foxStanding);
+  };
+
+  const handleFoxClick = () => {
+    stopFoxAnim();
+    setFoxSrc(foxShine);
+  };
+
+  const handleFoxRelease = () => {
+    stopFoxAnim();
+    setFoxSrc(foxStanding);
+  };
   const frames = ["smash.watch", "smas.wtch", "sma.wch", "ss.wh", "s.w"];
   const [frameIndex, setFrameIndex] = useState(0);
   const [navOpen, setNavOpen] = useState(false);
@@ -582,9 +617,29 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
             <div className="cta-block">
               <h3 className="cta-block__title">So what are you waiting for?</h3>
               <h3 className="cta-block__title">Start visualizing.</h3>
-              <Link className="btn" href="/dashboard">
-                To the Dashboard
-              </Link>
+              <div className="cta-block__cta">
+                <div className="cta-button-wrap">
+                  <Image
+                    src={foxSrc}
+                    alt="Fox standing"
+                    width={64}
+                    height={64}
+                    className="cta-fox"
+                    priority
+                  />
+                  <Link
+                    className="btn"
+                    href="/dashboard"
+                    onMouseEnter={startFoxAnim}
+                    onMouseLeave={stopFoxAnim}
+                    onMouseDown={handleFoxClick}
+                    onMouseUp={handleFoxRelease}
+                    onClick={handleFoxClick}
+                  >
+                    To the Dashboard
+                  </Link>
+                </div>
+              </div>
             </div>
             <div className="chart-divider" aria-hidden />
           </div>

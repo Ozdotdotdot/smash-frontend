@@ -1116,6 +1116,27 @@ body {
   letter-spacing: 0.03em;
 }
 
+.cta-block__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.6rem;
+}
+
+.cta-button-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cta-fox {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 12px);
+  transform: translateY(-50%);
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.35));
+}
+
 .chart-card__body {
   flex: 1;
   position: relative;
