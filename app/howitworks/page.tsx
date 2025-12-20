@@ -31,7 +31,12 @@ function normalizeInlineSvg(svgSource: string) {
 }
 
 export default async function HowItWorksPage() {
-  const svgPath = path.join(process.cwd(), "app", "howitworks", "how-it-works-simple.svg");
+  const svgPath = path.join(
+    process.cwd(),
+    "app",
+    "howitworks",
+    "How the website actually works.excalidraw.svg",
+  );
   const svgSource = await readFile(svgPath, "utf8");
   const svgMarkup = normalizeInlineSvg(svgSource);
   return <HowItWorksClient svgMarkup={svgMarkup} />;
