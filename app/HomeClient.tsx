@@ -40,9 +40,10 @@ type SpotlightCardProps = {
   title: string;
   subtitle: string;
   body: string;
+  className?: string;
 };
 
-function SpotlightCard({ title, subtitle, body }: SpotlightCardProps) {
+function SpotlightCard({ title, subtitle, body, className }: SpotlightCardProps) {
   const ref = useRef<HTMLDivElement | null>(null);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -65,7 +66,7 @@ function SpotlightCard({ title, subtitle, body }: SpotlightCardProps) {
   return (
     <div
       ref={ref}
-      className="spotlight-card"
+      className={["spotlight-card", className].filter(Boolean).join(" ")}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       role="article"
@@ -648,7 +649,7 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
         </section>
 
         <section className="section section--wide">
-          <div className="section__grid">
+          <div className="section__grid section__grid--spotlight">
             <SpotlightCard
               subtitle="Punching up"
               title="Weighted win rate"
@@ -662,6 +663,7 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
             <SpotlightCard
               subtitle="Focus"
               title="Smart filters"
+              className="spotlight-card--full"
               body="Slice by state and entrants to compare like-with-like. Outlier hiding trims the far tail so the rest of the field is readable."
             />
           </div>
