@@ -618,7 +618,11 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
               <h3 className="cta-block__title">So what are you waiting for?</h3>
               <h3 className="cta-block__title">Start visualizing.</h3>
               <div className="cta-block__cta">
-                <div className="cta-button-wrap">
+                <div
+                  className="cta-button-wrap"
+                  onMouseEnter={startFoxAnim}
+                  onMouseLeave={stopFoxAnim}
+                >
                   <Image
                     src={foxSrc}
                     alt="Fox standing"
@@ -630,8 +634,6 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
                   <Link
                     className="btn"
                     href="/dashboard"
-                    onMouseEnter={startFoxAnim}
-                    onMouseLeave={stopFoxAnim}
                     onMouseDown={handleFoxClick}
                     onMouseUp={handleFoxRelease}
                     onClick={handleFoxClick}
