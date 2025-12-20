@@ -326,27 +326,29 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
-      <div
-        className={[
-          "splash",
-          phase !== "full" ? "splash--compact" : "",
-          phase === "hidden" ? "splash--hidden" : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-      >
-        <span
+      {!initialSkipSplash ? (
+        <div
           className={[
-            "splash__mark",
-            phase !== "full" ? "splash__mark--compact" : "",
+            "splash",
+            phase !== "full" ? "splash--compact" : "",
+            phase === "hidden" ? "splash--hidden" : "",
           ]
             .filter(Boolean)
             .join(" ")}
         >
-          {markText}
-        </span>
-        <div className="splash__glow" />
-      </div>
+          <span
+            className={[
+              "splash__mark",
+              phase !== "full" ? "splash__mark--compact" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {markText}
+          </span>
+          <div className="splash__glow" />
+        </div>
+      ) : null}
 
       <main className={`page-shell ${mainVisible ? "page-shell--visible" : ""}`} aria-hidden={!mainVisible}>
         <nav

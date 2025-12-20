@@ -1,19 +1,20 @@
-import { Suspense } from "react";
 import HomeClient from "./HomeClient";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?:
+    | Promise<Record<string, string | string[] | undefined>>
+    | Record<string, string | string[] | undefined>;
 };
 
-export default function HomePage({ searchParams }: PageProps) {
-  const raw = searchParams?.skipSplash;
+export default async function HomePage({ searchParams }: PageProps) {
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const raw = resolvedSearchParams.skipSplash;
   const val = Array.isArray(raw) ? raw[0] : raw;
   const initialSkipSplash = val === "1" || val === "true";
 
   return (
-    <Suspense fallback={null}>
-      <HomeClient initialSkipSplash={initialSkipSplash} />
-    </Suspense>
+    <HomeClient initialSkipSplash={initialSkipSplash} />
   );
 }
-
