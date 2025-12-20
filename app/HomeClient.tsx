@@ -578,6 +578,7 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
               </div>
               {explainer.footnote ? <p className="section__note">{explainer.footnote}</p> : null}
             </div>
+            <div className="chart-divider" aria-hidden />
           </div>
         </section>
 

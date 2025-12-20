@@ -1086,6 +1086,21 @@ body {
   gap: 0.5rem;
 }
 
+.chart-divider {
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--foreground) 10%, transparent) 12%,
+    color-mix(in srgb, var(--foreground) 28%, transparent) 50%,
+    color-mix(in srgb, var(--foreground) 10%, transparent) 88%,
+    transparent 100%
+  );
+  border-radius: 999px;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--foreground) 12%, transparent);
+}
+
 .chart-card__body {
   flex: 1;
   position: relative;
