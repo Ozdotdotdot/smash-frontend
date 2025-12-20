@@ -542,7 +542,12 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
                     domain={[0, 1]}
                     tickFormatter={(v) => `${Math.round(v * 100)}%`}
                   />
-                  <Tooltip cursor={{ strokeDasharray: "3 3" }} content={(p) => <ChartTooltip {...p} />} />
+                  <Tooltip
+                    cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
+                    content={(p) => <ChartTooltip {...p} />}
+                    wrapperStyle={{ transition: "none" }}
+                    animationDuration={0}
+                  />
                   <Scatter data={filteredData.filtered} fill="#4ade80" />
                 </ScatterChart>
               </ResponsiveContainer>
