@@ -586,6 +586,7 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
                 To the Dashboard
               </Link>
             </div>
+            <div className="chart-divider" aria-hidden />
           </div>
         </section>
 
