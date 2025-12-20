@@ -107,6 +107,12 @@ function ChartTooltip({
   );
 }
 
+function formatStrengthTick(value: number) {
+  if (!Number.isFinite(value)) return "";
+  const rounded = Math.round(value * 100) / 100;
+  return rounded.toFixed(2).replace(/\.?0+$/, "");
+}
+
 export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: boolean }) {
   const [phase, setPhase] = useState<SplashPhase>(() =>
     initialSkipSplash ? "hidden" : "full"
@@ -524,6 +530,7 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
                     axisLine={{ stroke: "rgba(255,255,255,0.14)" }}
                     tickLine={{ stroke: "rgba(255,255,255,0.14)" }}
                     domain={[0, (dataMax: number) => Math.max(0, dataMax + 0.05)]}
+                    tickFormatter={formatStrengthTick}
                   />
                   <YAxis
                     type="number"
