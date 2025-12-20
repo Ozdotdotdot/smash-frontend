@@ -579,6 +579,13 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
               {explainer.footnote ? <p className="section__note">{explainer.footnote}</p> : null}
             </div>
             <div className="chart-divider" aria-hidden />
+            <div className="cta-block">
+              <h3 className="cta-block__title">So what are you waiting for?</h3>
+              <h3 className="cta-block__title">Start visualizing.</h3>
+              <Link className="btn" href="/dashboard">
+                To the Dashboard
+              </Link>
+            </div>
           </div>
         </section>
 
