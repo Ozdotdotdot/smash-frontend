@@ -1,10 +1,34 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+
+import PwaServiceWorker from "@/components/PwaServiceWorker";
 
 export const metadata: Metadata = {
   title: "Dashboard",
-  description: "Explore Smash Watch dashboards with weighted win rate vs opponent strength.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "smash.watch",
+  },
 };
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return children;
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
+export default function DashboardLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <div className="pwa-snappy">
+      <PwaServiceWorker scope="/dashboard/" />
+      {children}
+    </div>
+  );
 }
+
