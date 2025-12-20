@@ -1148,6 +1148,9 @@ export default function DashboardPage() {
             <Link href="/dashboard" className="site-nav__link" onClick={() => setNavOpen(false)}>
               <LetterSwapForward label="Dashboard" staggerDuration={0} />
             </Link>
+            <Link href="/howitworks" className="site-nav__link" onClick={() => setNavOpen(false)}>
+              <LetterSwapForward label="How it Works" staggerDuration={0} />
+            </Link>
             <a
               href="https://docs.smash.watch"
               className="site-nav__link"
@@ -1196,6 +1199,9 @@ export default function DashboardPage() {
           <div className="site-nav__links site-nav__links--mobile">
             <Link href="/dashboard" className="site-nav__link" onClick={() => setNavOpen(false)}>
               <LetterSwapForward label="Dashboard" staggerDuration={0} />
+            </Link>
+            <Link href="/howitworks" className="site-nav__link" onClick={() => setNavOpen(false)}>
+              <LetterSwapForward label="How it Works" staggerDuration={0} />
             </Link>
             <a
               href="https://docs.smash.watch"
