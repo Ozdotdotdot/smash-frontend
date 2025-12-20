@@ -10,7 +10,8 @@ export const metadata: Metadata = {
     "An end-to-end overview of Smash Watch: data sources, pipeline stages, metrics, and filtering logic.",
 };
 
-const RIGHT_PANEL_CUTOFF_X = 860;
+const DESKTOP_RIGHT_PANEL_CUTOFF_X = 860;
+const MOBILE_RIGHT_PANEL_CUTOFF_X = 900;
 
 function shouldStripTag(tagContent: string, cutoffX: number) {
   const transformMatch = tagContent.match(/\stransform="([^"]*)"/);
@@ -76,30 +77,42 @@ function stripRightPanel(svg: string, cutoffX: number) {
   return out;
 }
 
-function normalizeInlineSvg(svgSource: string) {
+function normalizeInlineSvg(
+  svgSource: string,
+  options?: {
+    stripRightPanel?: boolean;
+    rightPanelCutoffX?: number;
+  },
+) {
   const start = svgSource.indexOf("<svg");
   if (start === -1) return "";
 
-  let svg = stripRightPanel(svgSource.slice(start).trim(), RIGHT_PANEL_CUTOFF_X);
+  const strip = options?.stripRightPanel ?? false;
+  const cutoffX = options?.rightPanelCutoffX ?? DESKTOP_RIGHT_PANEL_CUTOFF_X;
+
+  let svg = svgSource.slice(start).trim();
+  if (strip) svg = stripRightPanel(svg, cutoffX);
 
   const openTagMatch = svg.match(/^<svg\b([^>]*)>/);
   if (!openTagMatch) return "";
 
   let attrs = openTagMatch[1] ?? "";
 
-  // Crop the diagram so only the "main" panel renders.
-  const targetViewBoxWidth = RIGHT_PANEL_CUTOFF_X;
-  const viewBoxMatch = attrs.match(/\sviewBox="([^"]*)"/);
-  if (viewBoxMatch) {
-    const parts = viewBoxMatch[1].trim().split(/\s+/);
-    if (parts.length === 4) {
-      const [x, y, w, h] = parts;
-      const wNum = Number(w);
-      if (Number.isFinite(wNum) && wNum > targetViewBoxWidth) {
-        attrs = attrs.replace(
-          /\sviewBox="[^"]*"/,
-          ` viewBox="${x} ${y} ${targetViewBoxWidth} ${h}"`,
-        );
+  if (strip) {
+    // Crop the diagram so only the "main" panel renders.
+    const targetViewBoxWidth = cutoffX;
+    const viewBoxMatch = attrs.match(/\sviewBox="([^"]*)"/);
+    if (viewBoxMatch) {
+      const parts = viewBoxMatch[1].trim().split(/\s+/);
+      if (parts.length === 4) {
+        const [x, y, w, h] = parts;
+        const wNum = Number(w);
+        if (Number.isFinite(wNum) && wNum > targetViewBoxWidth) {
+          attrs = attrs.replace(
+            /\sviewBox="[^"]*"/,
+            ` viewBox="${x} ${y} ${targetViewBoxWidth} ${h}"`,
+          );
+        }
       }
     }
   }
@@ -138,13 +151,32 @@ function normalizeInlineSvg(svgSource: string) {
 }
 
 export default async function HowItWorksPage() {
-  const svgPath = path.join(
+  const desktopSvgPath = path.join(
     process.cwd(),
     "app",
     "howitworks",
     "How the website actually works.excalidraw.svg",
   );
-  const svgSource = await readFile(svgPath, "utf8");
-  const svgMarkup = normalizeInlineSvg(svgSource);
-  return <HowItWorksClient svgMarkup={svgMarkup} />;
+  const mobileSvgPath = path.join(
+    process.cwd(),
+    "app",
+    "howitworks",
+    "how the website actually works mobile.svg",
+  );
+
+  const [desktopSvgSource, mobileSvgSource] = await Promise.all([
+    readFile(desktopSvgPath, "utf8"),
+    readFile(mobileSvgPath, "utf8"),
+  ]);
+
+  const svgMarkup = normalizeInlineSvg(desktopSvgSource, {
+    stripRightPanel: true,
+    rightPanelCutoffX: DESKTOP_RIGHT_PANEL_CUTOFF_X,
+  });
+  const mobileSvgMarkup = normalizeInlineSvg(mobileSvgSource, {
+    stripRightPanel: true,
+    rightPanelCutoffX: MOBILE_RIGHT_PANEL_CUTOFF_X,
+  });
+
+  return <HowItWorksClient svgMarkup={svgMarkup} mobileSvgMarkup={mobileSvgMarkup} />;
 }
