@@ -503,65 +503,80 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
               ))}
             </div>
           </div>
-          <div className="chart-card">
-            <div className="chart-card__header">
-              <span className="mock-pill">
-                {selectedSource.label} · {filteredData.filtered.length} players
-              </span>
-              <span className="mock-pill mock-pill--ghost">Weighted win rate vs strength</span>
-              <button
-                className={`pill-toggle ${hideOutliers ? "pill-toggle--active" : ""}`}
-                type="button"
-                onClick={() => setHideOutliers((v) => !v)}
-              >
-                {hideOutliers ? "Outliers hidden" : "Hide outliers"}
-                {filteredData.hidden > 0 ? ` (${filteredData.hidden})` : ""}
-              </button>
-            </div>
-            <div className="chart-card__body">
-              <ResponsiveContainer width="100%" height={420}>
-                <ScatterChart margin={{ top: 24, right: 16, bottom: 24, left: 16 }}>
-                  <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="4 6" />
-                  <XAxis
-                    type="number"
-                    dataKey="opponent_strength"
-                    name="Opponent strength"
-                    tick={{ fill: "rgba(255,255,255,0.65)", fontSize: 12 }}
-                    axisLine={{ stroke: "rgba(255,255,255,0.14)" }}
-                    tickLine={{ stroke: "rgba(255,255,255,0.14)" }}
-                    domain={[0, (dataMax: number) => Math.max(0, dataMax + 0.05)]}
-                    tickFormatter={formatStrengthTick}
-                  />
-                  <YAxis
-                    type="number"
-                    dataKey="weighted_win_rate"
-                    name="Weighted win rate"
-                    tick={{ fill: "rgba(255,255,255,0.65)", fontSize: 12 }}
-                    axisLine={{ stroke: "rgba(255,255,255,0.14)" }}
-                    tickLine={{ stroke: "rgba(255,255,255,0.14)" }}
-                    domain={[0, 1]}
-                    tickFormatter={(v) => `${Math.round(v * 100)}%`}
-                  />
-                  <Tooltip
-                    cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
-                    content={(p) => <ChartTooltip {...p} />}
-                    wrapperStyle={{ transition: "none" }}
-                    animationDuration={0}
-                  />
-                  <Scatter data={filteredData.filtered} fill="#4ade80" />
-                </ScatterChart>
-              </ResponsiveContainer>
+          <div className="chart-stack">
+            <div className="chart-card">
+              <div className="chart-card__header">
+                <span className="mock-pill">
+                  {selectedSource.label} · {filteredData.filtered.length} players
+                </span>
+                <span className="mock-pill mock-pill--ghost">Weighted win rate vs strength</span>
+                <button
+                  className={`pill-toggle ${hideOutliers ? "pill-toggle--active" : ""}`}
+                  type="button"
+                  onClick={() => setHideOutliers((v) => !v)}
+                >
+                  {hideOutliers ? "Outliers hidden" : "Hide outliers"}
+                  {filteredData.hidden > 0 ? ` (${filteredData.hidden})` : ""}
+                </button>
+              </div>
+              <div className="chart-card__body">
+                <ResponsiveContainer width="100%" height={420}>
+                  <ScatterChart margin={{ top: 24, right: 16, bottom: 24, left: 16 }}>
+                    <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="4 6" />
+                    <XAxis
+                      type="number"
+                      dataKey="opponent_strength"
+                      name="Opponent strength"
+                      tick={{ fill: "rgba(255,255,255,0.65)", fontSize: 12 }}
+                      axisLine={{ stroke: "rgba(255,255,255,0.14)" }}
+                      tickLine={{ stroke: "rgba(255,255,255,0.14)" }}
+                      domain={[0, (dataMax: number) => Math.max(0, dataMax + 0.05)]}
+                      tickFormatter={formatStrengthTick}
+                    />
+                    <YAxis
+                      type="number"
+                      dataKey="weighted_win_rate"
+                      name="Weighted win rate"
+                      tick={{ fill: "rgba(255,255,255,0.65)", fontSize: 12 }}
+                      axisLine={{ stroke: "rgba(255,255,255,0.14)" }}
+                      tickLine={{ stroke: "rgba(255,255,255,0.14)" }}
+                      domain={[0, 1]}
+                      tickFormatter={(v) => `${Math.round(v * 100)}%`}
+                    />
+                    <Tooltip
+                      cursor={{ strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.25)" }}
+                      content={(p) => <ChartTooltip {...p} />}
+                      wrapperStyle={{ transition: "none" }}
+                      animationDuration={0}
+                    />
+                    <Scatter data={filteredData.filtered} fill="#4ade80" />
+                  </ScatterChart>
+                </ResponsiveContainer>
 
-              <div className="chart-card__legend">
-                <div className="chart-card__legend-item">
-                  <span className="legend-dot" />
-                  Higher = better win rate
-                </div>
-                <div className="chart-card__legend-item">
-                  <span className="legend-dot legend-dot--blue" />
-                  Right = tougher opponents
+                <div className="chart-card__legend">
+                  <div className="chart-card__legend-item">
+                    <span className="legend-dot" />
+                    Higher = better win rate
+                  </div>
+                  <div className="chart-card__legend-item">
+                    <span className="legend-dot legend-dot--blue" />
+                    Right = tougher opponents
+                  </div>
                 </div>
               </div>
+            </div>
+
+            <div className="info-card">
+              <div className="info-card__title">{explainer.title}</div>
+              <div className="info-card__summary">{explainer.summary}</div>
+              <div className="info-card__filters">
+                {explainer.filters.map((line) => (
+                  <span key={line} className="info-card__filter">
+                    {line}
+                  </span>
+                ))}
+              </div>
+              {explainer.footnote ? <p className="section__note">{explainer.footnote}</p> : null}
             </div>
           </div>
         </section>
@@ -586,17 +601,7 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
           </div>
         </section>
 
-        <section className="section section--split">
-          <div className="section__copy">
-            <h2 className="section__title">{explainer.title}</h2>
-            <p>{explainer.summary}</p>
-            <ul className="checklist">
-              {explainer.filters.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-            {explainer.footnote ? <p className="section__note">{explainer.footnote}</p> : null}
-          </div>
+        <section className="section section--wide">
           <div className="stats-card">
             <div className="stats-card__headline">Data quality notes</div>
             <div className="stats-card__rows">

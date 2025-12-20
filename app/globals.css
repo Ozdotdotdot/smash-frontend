@@ -1074,6 +1074,12 @@ body {
   width: 100%;
 }
 
+.chart-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .chart-card__header {
   display: flex;
   flex-wrap: wrap;
