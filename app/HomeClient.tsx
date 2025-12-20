@@ -523,7 +523,7 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
                     tick={{ fill: "rgba(255,255,255,0.65)", fontSize: 12 }}
                     axisLine={{ stroke: "rgba(255,255,255,0.14)" }}
                     tickLine={{ stroke: "rgba(255,255,255,0.14)" }}
-                    domain={["dataMin - 0.05", "dataMax + 0.05"]}
+                    domain={[0, (dataMax: number) => Math.max(0, dataMax + 0.05)]}
                   />
                   <YAxis
                     type="number"
