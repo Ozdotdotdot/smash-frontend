@@ -1,12 +1,14 @@
 /* eslint-disable no-restricted-globals */
 
-const CACHE_NAME = "smash-dashboard-v1";
+const CACHE_NAME = "smash-dashboard-v2";
+const OFFLINE_URL = "/offline.html";
 const PRECACHE_URLS = [
   "/dashboard",
   "/manifest.webmanifest",
   "/icon-192.png",
   "/icon-512.png",
   "/apple-touch-icon.png",
+  OFFLINE_URL,
 ];
 
 self.addEventListener("install", (event) => {
@@ -40,6 +42,19 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
+      if (request.mode === "navigate") {
+        try {
+          const networkResponse = await fetch(request);
+          if (networkResponse && networkResponse.ok) {
+            cache.put(request, networkResponse.clone());
+          }
+          return networkResponse;
+        } catch {
+          const cachedPage = await cache.match(request, { ignoreSearch: true });
+          return cachedPage ?? (await cache.match(OFFLINE_URL)) ?? new Response("Offline", { status: 503 });
+        }
+      }
+
       const cached = await cache.match(request, { ignoreSearch: true });
       const fetchPromise = fetch(request)
         .then((response) => {
@@ -50,8 +65,7 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(() => undefined);
 
-      return cached ?? (await fetchPromise) ?? new Response("Offline", { status: 503 });
+      return cached ?? (await fetchPromise) ?? (await cache.match(OFFLINE_URL)) ?? new Response("Offline", { status: 503 });
     })()
   );
 });
-

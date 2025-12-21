@@ -26,9 +26,8 @@ export default function DashboardLayout({
 }>) {
   return (
     <div className="pwa-snappy">
-      <PwaServiceWorker scope="/dashboard/" />
+      <PwaServiceWorker />
       {children}
     </div>
   );
 }
-
