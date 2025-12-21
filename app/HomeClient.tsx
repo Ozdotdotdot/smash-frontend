@@ -39,11 +39,13 @@ type FilteredData = {
 type SpotlightCardProps = {
   title: string;
   subtitle: string;
-  body: string;
+  body: React.ReactNode;
   className?: string;
+  href?: string;
+  external?: boolean;
 };
 
-function SpotlightCard({ title, subtitle, body, className }: SpotlightCardProps) {
+function SpotlightCard({ title, subtitle, body, className, href, external }: SpotlightCardProps) {
   const ref = useRef<HTMLDivElement | null>(null);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -63,7 +65,7 @@ function SpotlightCard({ title, subtitle, body, className }: SpotlightCardProps)
     el.style.setProperty("--my", "50%");
   };
 
-  return (
+  const card = (
     <div
       ref={ref}
       className={["spotlight-card", className].filter(Boolean).join(" ")}
@@ -76,6 +78,23 @@ function SpotlightCard({ title, subtitle, body, className }: SpotlightCardProps)
       <p className="spotlight-card__body">{body}</p>
     </div>
   );
+
+  if (href) {
+    if (external) {
+      return (
+        <a className="spotlight-card-link" href={href} target="_blank" rel="noreferrer">
+          {card}
+        </a>
+      );
+    }
+    return (
+      <Link className="spotlight-card-link" href={href}>
+        {card}
+      </Link>
+    );
+  }
+
+  return card;
 }
 
 function ChartTooltip({
@@ -651,20 +670,25 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
         <section className="section section--wide">
           <div className="section__grid section__grid--spotlight">
             <SpotlightCard
-              subtitle="Punching up"
-              title="Weighted win rate"
-              body="Raw win rate lies. Weighted win rate rewards players who win multiple sets and beat stronger opponents. One upset doesn’t carry you."
+              subtitle="Need more reading?"
+              title="Docs at your pace"
+              body="Dive into the full docs for setup, data definitions, and examples."
+              href="https://docs.smash.watch"
+              external
             />
             <SpotlightCard
-              subtitle="Context"
-              title="Opponent strength"
-              body="Every point has a difficulty score based on who you played. That gives your win rate a meaning: are you farming, or surviving?"
+              subtitle="Curious about the pipeline?"
+              title="How it works"
+              body="See where our data comes from, and what we do to render it nicely for you!"
+              href="/howitworks"
             />
             <SpotlightCard
-              subtitle="Focus"
-              title="Smart filters"
+              subtitle="About us"
+              title="Who built this"
               className="spotlight-card--full"
-              body="Slice by state and entrants to compare like-with-like. Outlier hiding trims the far tail so the rest of the field is readable."
+              body="smash.watch is a personal project by Ozair Khan. A local GA Marth/Sheik player. 
+              The goal was to provide a way to see how
+              you stack up in your community based purely off data."
             />
           </div>
         </section>
