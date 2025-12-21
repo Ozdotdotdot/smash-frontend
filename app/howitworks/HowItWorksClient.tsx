@@ -11,13 +11,7 @@ import LetterSwapForward from "@/components/fancy/text/letter-swap-forward-anim"
 const SVG_MAX_WIDTH_CLASS = "max-w-3xl"; // e.g. "max-w-5xl" | "max-w-7xl" | "max-w-none"
 const SVG_SECTION_MARGIN_TOP_CLASS = "mt-10";
 
-export default function HowItWorksClient({
-  svgMarkup,
-  mobileSvgMarkup,
-}: {
-  svgMarkup: string;
-  mobileSvgMarkup: string;
-}) {
+export default function HowItWorksClient({ mobileSvgMarkup }: { mobileSvgMarkup: string }) {
   const [navOpen, setNavOpen] = useState(false);
   const [navStuck, setNavStuck] = useState(false);
 
@@ -170,26 +164,14 @@ export default function HowItWorksClient({
         </nav>
 
         <section className="flex w-full flex-col">
-          <div className="block md:hidden">
-            <div
-              className={[
-                SVG_SECTION_MARGIN_TOP_CLASS,
-                "mx-auto w-full overflow-x-auto",
-                SVG_MAX_WIDTH_CLASS,
-              ].join(" ")}
-              dangerouslySetInnerHTML={{ __html: mobileSvgMarkup }}
-            />
-          </div>
-          <div className="hidden md:block">
-            <div
-              className={[
-                SVG_SECTION_MARGIN_TOP_CLASS,
-                "mx-auto w-full overflow-x-auto",
-                SVG_MAX_WIDTH_CLASS,
-              ].join(" ")}
-              dangerouslySetInnerHTML={{ __html: svgMarkup }}
-            />
-          </div>
+          <div
+            className={[
+              SVG_SECTION_MARGIN_TOP_CLASS,
+              "mx-auto w-full overflow-x-auto",
+              SVG_MAX_WIDTH_CLASS,
+            ].join(" ")}
+            dangerouslySetInnerHTML={{ __html: mobileSvgMarkup }}
+          />
         </section>
 
         <footer className="footer">

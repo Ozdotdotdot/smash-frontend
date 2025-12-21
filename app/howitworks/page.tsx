@@ -10,8 +10,7 @@ export const metadata: Metadata = {
     "An end-to-end overview of Smash Watch: data sources, pipeline stages, metrics, and filtering logic.",
 };
 
-const DESKTOP_RIGHT_PANEL_CUTOFF_X = 860;
-const MOBILE_RIGHT_PANEL_CUTOFF_X = 900;
+const RIGHT_PANEL_CUTOFF_X = 900;
 
 function shouldStripTag(tagContent: string, cutoffX: number) {
   const transformMatch = tagContent.match(/\stransform="([^"]*)"/);
@@ -88,7 +87,7 @@ function normalizeInlineSvg(
   if (start === -1) return "";
 
   const strip = options?.stripRightPanel ?? false;
-  const cutoffX = options?.rightPanelCutoffX ?? DESKTOP_RIGHT_PANEL_CUTOFF_X;
+  const cutoffX = options?.rightPanelCutoffX ?? RIGHT_PANEL_CUTOFF_X;
 
   let svg = svgSource.slice(start).trim();
   if (strip) svg = stripRightPanel(svg, cutoffX);
@@ -151,12 +150,6 @@ function normalizeInlineSvg(
 }
 
 export default async function HowItWorksPage() {
-  const desktopSvgPath = path.join(
-    process.cwd(),
-    "app",
-    "howitworks",
-    "How the website actually works.excalidraw.svg",
-  );
   const mobileSvgPath = path.join(
     process.cwd(),
     "app",
@@ -164,19 +157,12 @@ export default async function HowItWorksPage() {
     "how the website actually works mobile.svg",
   );
 
-  const [desktopSvgSource, mobileSvgSource] = await Promise.all([
-    readFile(desktopSvgPath, "utf8"),
-    readFile(mobileSvgPath, "utf8"),
-  ]);
+  const mobileSvgSource = await readFile(mobileSvgPath, "utf8");
 
-  const svgMarkup = normalizeInlineSvg(desktopSvgSource, {
-    stripRightPanel: true,
-    rightPanelCutoffX: DESKTOP_RIGHT_PANEL_CUTOFF_X,
-  });
   const mobileSvgMarkup = normalizeInlineSvg(mobileSvgSource, {
     stripRightPanel: true,
-    rightPanelCutoffX: MOBILE_RIGHT_PANEL_CUTOFF_X,
+    rightPanelCutoffX: RIGHT_PANEL_CUTOFF_X,
   });
 
-  return <HowItWorksClient svgMarkup={svgMarkup} mobileSvgMarkup={mobileSvgMarkup} />;
+  return <HowItWorksClient mobileSvgMarkup={mobileSvgMarkup} />;
 }
