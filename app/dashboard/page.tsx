@@ -1291,7 +1291,7 @@ export default function DashboardPage() {
           )}
         </aside>
 
-        <div className="flex-1 p-4 md:p-8">
+        <div className="flex-1 min-w-0 p-4 md:p-8">
           <div className="mb-4 flex items-center justify-between md:hidden">
             <button
               type="button"
@@ -1304,7 +1304,7 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-black/30 p-6 backdrop-blur">
+          <div className="min-w-0 rounded-xl border border-white/10 bg-black/30 p-6 backdrop-blur">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h1 className="text-2xl font-semibold">Dashboard</h1>
@@ -1337,7 +1337,7 @@ export default function DashboardPage() {
               )}
               {displayedPoints.length > 0 && (
                 <>
-                  <div className="h-[480px] rounded-lg border border-white/10 bg-black/40 p-3">
+                  <div className="h-[480px] w-full overflow-hidden rounded-lg border border-white/10 bg-black/40 p-3">
                     <ResponsiveContainer width="100%" height="100%">
                       <ScatterChart margin={{ top: 24, right: 16, bottom: 24, left: 16 }}>
                         <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="4 6" />
