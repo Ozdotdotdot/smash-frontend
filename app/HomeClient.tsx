@@ -693,46 +693,6 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
           </div>
         </section>
 
-        <section className="section section--wide">
-          <div className="stats-card">
-            <div className="stats-card__headline">Data quality notes</div>
-            <div className="stats-card__rows">
-              <div className="stats-card__row">
-                <span>Rows loaded</span>
-                <span>{isLoading ? "…" : players.length}</span>
-              </div>
-              <div className="stats-card__row">
-                <span>Rows shown</span>
-                <span>{isLoading ? "…" : filteredData.filtered.length}</span>
-              </div>
-              <div className="stats-card__row">
-                <span>Hidden outliers</span>
-                <span>{isLoading ? "…" : filteredData.hidden}</span>
-              </div>
-              {filteredData.upperBound !== undefined ? (
-                <div className="stats-card__row">
-                  <span>Strength cutoff</span>
-                  <span>{filteredData.upperBound.toFixed(3)}</span>
-                </div>
-              ) : null}
-              {error ? (
-                <div className="stats-card__row stats-card__row--error">
-                  <span>Error</span>
-                  <span>{error}</span>
-                </div>
-              ) : null}
-            </div>
-            <div className="stats-card__cta">
-              <Link className="btn" href="/dashboard">
-                Go to dashboard
-              </Link>
-              <a className="btn btn--ghost" href="https://docs.smash.watch">
-                Read docs
-              </a>
-            </div>
-          </div>
-        </section>
-
         <footer className="footer">
           <div className="text-sm font-semibold uppercase tracking-[0.3em] text-foreground/80">
             s.w
