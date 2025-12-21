@@ -1154,6 +1154,8 @@ export default function DashboardPage() {
             <a
               href="https://docs.smash.watch"
               className="site-nav__link"
+              target="_blank"
+              rel="noreferrer"
               onClick={() => setNavOpen(false)}
             >
               <LetterSwapForward label="Docs" staggerDuration={0} />
@@ -1206,6 +1208,8 @@ export default function DashboardPage() {
             <a
               href="https://docs.smash.watch"
               className="site-nav__link"
+              target="_blank"
+              rel="noreferrer"
               onClick={() => setNavOpen(false)}
             >
               <LetterSwapForward label="Docs" staggerDuration={0} />

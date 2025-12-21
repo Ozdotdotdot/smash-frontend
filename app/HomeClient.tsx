@@ -433,7 +433,12 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
               <Link href="/howitworks" className="site-nav__link">
                 <LetterSwapForward label="How it Works" staggerDuration={0} />
               </Link>
-              <a href="https://docs.smash.watch" className="site-nav__link">
+              <a
+                href="https://docs.smash.watch"
+                className="site-nav__link"
+                target="_blank"
+                rel="noreferrer"
+              >
                 <LetterSwapForward label="Docs" staggerDuration={0} />
               </a>
             </div>
@@ -484,6 +489,8 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
               <a
                 href="https://docs.smash.watch"
                 className="site-nav__link"
+                target="_blank"
+                rel="noreferrer"
                 onClick={() => setNavOpen(false)}
               >
                 <LetterSwapForward label="Docs" staggerDuration={0} />
