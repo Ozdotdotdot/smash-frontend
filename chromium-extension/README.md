@@ -1,0 +1,23 @@
+# Smash Watch Chrome Extension
+
+A minimal content-script extension that injects a `View on smash.watch` button on start.gg tournament event and bracket pages.
+
+## Files
+- `manifest.json`: MV3 manifest describing the content script.
+- `src/content.js`: Injects and maintains the button, keeping it in sync with SPA navigation.
+- `src/content.css`: Styling for the floating button.
+
+## How it works
+- Matches start.gg tournament event pages and appends a floating button to the document body.
+- The button points to `https://smash.watch/...` using the current start.gg path (falls back to `?source=<url>` when the path cannot be parsed).
+- Watches for URL changes and DOM mutations so the button persists across client-side navigation.
+
+## Load locally in Chrome/Brave
+1. Open `chrome://extensions/` (or `brave://extensions/`).
+2. Toggle **Developer mode** on (top right).
+3. Click **Load unpacked** and select `chromium-extension` in this repo.
+4. Visit a start.gg event/bracket page; you should see the bottom-right `View on smash.watch` button. It opens smash.watch in a new tab.
+
+## Tweaks
+- Update URL logic in `src/content.js` if smash.watch expects a different path/param format.
+- Adjust styling in `src/content.css` or change positioning if a floating button is not desired.

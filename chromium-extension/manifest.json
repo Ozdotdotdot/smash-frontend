@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Smash Watch Link",
+  "description": "Adds a “View on smash.watch” button on start.gg tournament event and bracket pages.",
+  "version": "0.1.0",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.start.gg/tournament/*/event/*/*",
+        "https://*.start.gg/tournament/*/event/*/brackets/*",
+        "https://*.start.gg/tournament/*/event/*/overview",
+        "https://*.start.gg/tournament/*/event/*/details"
+      ],
+      "js": [
+        "src/content.js"
+      ],
+      "css": [
+        "src/content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
