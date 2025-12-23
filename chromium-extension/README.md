@@ -8,7 +8,8 @@ A minimal content-script extension that injects a `View on smash.watch` button o
 - `src/content.css`: Styling for the floating button.
 
 ## How it works
-- Matches start.gg tournament event pages and appends a floating button to the document body.
+- Matches start.gg tournament event pages and injects a `View on smash.watch` button.
+- It first tries to insert into the page’s nav bar (where “Overview / Brackets / Standings / Matches” live) so it feels native; if that nav can’t be found, it falls back to a floating button.
 - The button opens `https://smash.watch/dashboard?view=tournament&tournamentUrl=<current start.gg URL>` so the Dashboard loads in tournament mode with the pasted URL.
 - Watches for URL changes and DOM mutations so the button persists across client-side navigation.
 

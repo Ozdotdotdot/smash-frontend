@@ -13,6 +13,15 @@ function shouldShowButton() {
   return pathname.includes("/tournament/") && pathname.includes("/event/");
 }
 
+function findNavContainer() {
+  // Start.gg nav uses hashed classnames like "navigation-xxxx". We look for a div containing nav links.
+  const candidates = Array.from(document.querySelectorAll('div[class*="navigation-"]'));
+  return candidates.find((el) => {
+    const text = el.textContent?.toLowerCase() ?? "";
+    return text.includes("overview") && text.includes("brackets");
+  });
+}
+
 function upsertButton() {
   const body = document.body;
   if (!body) return;
@@ -29,18 +38,36 @@ function upsertButton() {
 
   if (existing) {
     existing.href = smashWatchUrl;
+    const nav = findNavContainer();
+    if (nav && existing.parentElement !== nav) {
+      existing.classList.remove("smash-watch-floating");
+      existing.classList.add("smash-watch-nav");
+      nav.appendChild(existing);
+    } else if (!nav && existing.parentElement !== body) {
+      existing.classList.add("smash-watch-floating");
+      existing.classList.remove("smash-watch-nav");
+      body.appendChild(existing);
+    }
     return;
   }
 
   const button = document.createElement("a");
   button.id = BUTTON_ID;
   button.className = "smash-watch-button";
+  button.classList.add("smash-watch-floating");
   button.target = "_blank";
   button.rel = "noopener noreferrer";
   button.href = smashWatchUrl;
   button.textContent = "View on smash.watch";
 
-  body.appendChild(button);
+  const nav = findNavContainer();
+  if (nav) {
+    button.classList.remove("smash-watch-floating");
+    button.classList.add("smash-watch-nav");
+    nav.appendChild(button);
+  } else {
+    body.appendChild(button);
+  }
 }
 
 function setupObservers() {
