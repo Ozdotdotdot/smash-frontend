@@ -9,9 +9,9 @@ A minimal content-script extension that injects a `View on smash.watch` button o
 
 ## How it works
 - Matches start.gg tournament event pages and injects a `View on smash.watch` button.
-- It first tries to insert into the page’s nav bar (where “Overview / Brackets / Standings / Matches” live) so it feels native; if that nav can’t be found, it falls back to a floating button.
+- It prefers to sit inside the page’s tab nav (Overview / Brackets / Standings / Matches) by searching for that text instead of brittle classes; if nav isn’t found yet, it stays as a floating button and will reattach when nav appears.
 - The button opens `https://smash.watch/dashboard?view=tournament&tournamentUrl=<current start.gg URL>` so the Dashboard loads in tournament mode with the pasted URL.
-- Watches for URL changes and DOM mutations so the button persists across client-side navigation.
+- Polls and listens to DOM mutations/URL changes to keep the button present across SPA navigation.
 
 ## Load locally in Chrome/Brave
 1. Open `chrome://extensions/` (or `brave://extensions/`).

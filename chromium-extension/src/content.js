@@ -14,59 +14,61 @@ function shouldShowButton() {
 }
 
 function findNavContainer() {
-  // Start.gg nav uses hashed classnames like "navigation-xxxx". We look for a div containing nav links.
-  const candidates = Array.from(document.querySelectorAll('div[class*="navigation-"]'));
+  // Start.gg nav uses hashed classnames like "navigation-xxxx". We look for a container that includes known tab labels.
+  const candidates = Array.from(document.querySelectorAll('div[class*="navigation-"], nav[role="tablist"], [role="tablist"]'));
+  const isVisible = (el) => {
+    const rect = el.getBoundingClientRect();
+    const style = window.getComputedStyle(el);
+    return rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden";
+  };
   return candidates.find((el) => {
-    const text = el.textContent?.toLowerCase() ?? "";
+    if (!isVisible(el)) return false;
+    const text = (el.textContent || "").toLowerCase();
     return text.includes("overview") && text.includes("brackets");
   });
 }
 
-function upsertButton() {
+function ensureButton(smashWatchUrl) {
+  let button = document.getElementById(BUTTON_ID);
+  if (!button) {
+    button = document.createElement("a");
+    button.id = BUTTON_ID;
+    button.className = "smash-watch-button smash-watch-floating";
+    button.target = "_blank";
+    button.rel = "noopener noreferrer";
+    button.textContent = "View on smash.watch";
+  }
+  button.href = smashWatchUrl;
+  return button;
+}
+
+function placeButton() {
   const body = document.body;
   if (!body) return;
 
   const show = shouldShowButton();
-  const existing = document.getElementById(BUTTON_ID);
+  const button = document.getElementById(BUTTON_ID);
 
   if (!show) {
-    if (existing) existing.remove();
+    if (button) button.remove();
     return;
   }
 
   const smashWatchUrl = buildSmashWatchUrl();
+  const btn = ensureButton(smashWatchUrl);
+  const nav = findNavContainer();
 
-  if (existing) {
-    existing.href = smashWatchUrl;
-    const nav = findNavContainer();
-    if (nav && existing.parentElement !== nav) {
-      existing.classList.remove("smash-watch-floating");
-      existing.classList.add("smash-watch-nav");
-      nav.appendChild(existing);
-    } else if (!nav && existing.parentElement !== body) {
-      existing.classList.add("smash-watch-floating");
-      existing.classList.remove("smash-watch-nav");
-      body.appendChild(existing);
-    }
+  if (nav && btn.parentElement !== nav) {
+    btn.classList.remove("smash-watch-floating");
+    btn.classList.add("smash-watch-nav");
+    nav.appendChild(btn);
     return;
   }
 
-  const button = document.createElement("a");
-  button.id = BUTTON_ID;
-  button.className = "smash-watch-button";
-  button.classList.add("smash-watch-floating");
-  button.target = "_blank";
-  button.rel = "noopener noreferrer";
-  button.href = smashWatchUrl;
-  button.textContent = "View on smash.watch";
-
-  const nav = findNavContainer();
-  if (nav) {
-    button.classList.remove("smash-watch-floating");
-    button.classList.add("smash-watch-nav");
-    nav.appendChild(button);
-  } else {
-    body.appendChild(button);
+  if (!nav && btn.parentElement !== body) {
+    btn.classList.add("smash-watch-floating");
+    btn.classList.remove("smash-watch-nav");
+    body.appendChild(btn);
   }
 }
 
@@ -76,12 +78,14 @@ function setupObservers() {
   setInterval(() => {
     if (window.location.href !== lastUrl) {
       lastUrl = window.location.href;
-      upsertButton();
+      placeButton();
     }
+    // Keep trying in case nav loads late.
+    placeButton();
   }, CHECK_INTERVAL_MS);
 
   const observer = new MutationObserver(() => {
-    upsertButton();
+    placeButton();
   });
 
   observer.observe(document.body, {
@@ -91,7 +95,7 @@ function setupObservers() {
 }
 
 function init() {
-  upsertButton();
+  placeButton();
   setupObservers();
 }
 

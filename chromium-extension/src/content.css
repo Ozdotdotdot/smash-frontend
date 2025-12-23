@@ -35,4 +35,5 @@
   margin-left: 10px;
   white-space: nowrap;
   box-shadow: 0 10px 24px rgba(31, 139, 255, 0.28);
+  align-self: center;
 }
