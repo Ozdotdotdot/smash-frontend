@@ -9,7 +9,7 @@ A minimal content-script extension that injects a `View on smash.watch` button o
 
 ## How it works
 - Matches start.gg tournament event pages and appends a floating button to the document body.
-- The button points to `https://smash.watch/...` using the current start.gg path (falls back to `?source=<url>` when the path cannot be parsed).
+- The button opens `https://smash.watch/dashboard?view=tournament&tournamentUrl=<current start.gg URL>` so the Dashboard loads in tournament mode with the pasted URL.
 - Watches for URL changes and DOM mutations so the button persists across client-side navigation.
 
 ## Load locally in Chrome/Brave

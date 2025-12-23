@@ -25,8 +25,9 @@ export async function GET(request: Request) {
   try {
     const res = await fetch(remoteUrl.toString(), { cache: "no-store" });
     if (!res.ok) {
+      const text = await res.text();
       return NextResponse.json(
-        { error: `Upstream error ${res.status}` },
+        { error: `Upstream error ${res.status}`, upstream: text },
         { status: res.status },
       );
     }

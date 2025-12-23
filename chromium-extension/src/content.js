@@ -2,15 +2,10 @@ const BUTTON_ID = "smash-watch-button";
 const CHECK_INTERVAL_MS = 1000;
 
 function buildSmashWatchUrl() {
-  const url = new URL(window.location.href);
-  const segments = url.pathname.split("/").filter(Boolean);
-  const tournamentIndex = segments.indexOf("tournament");
-  if (tournamentIndex === -1) {
-    return `https://smash.watch/?source=${encodeURIComponent(url.href)}`;
-  }
-
-  const smashPath = segments.slice(tournamentIndex).join("/");
-  return `https://smash.watch/${smashPath}${url.search}`;
+  const target = new URL("https://smash.watch/dashboard");
+  target.searchParams.set("view", "tournament");
+  target.searchParams.set("tournamentUrl", window.location.href);
+  return target.toString();
 }
 
 function shouldShowButton() {

@@ -683,6 +683,7 @@ export default function DashboardPage() {
   const [seriesOptions, setSeriesOptions] = useState<Array<{ key: string; label: string }>>([]);
   const [selectedSeriesKey, setSelectedSeriesKey] = useState<string | null>(null);
   const [hideOutliers, setHideOutliers] = useState(false);
+  const [pendingQueryApply, setPendingQueryApply] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -697,6 +698,21 @@ export default function DashboardPage() {
     handleStick();
     window.addEventListener("scroll", handleStick);
     return () => window.removeEventListener("scroll", handleStick);
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const queryView = params.get("view");
+    const queryTournamentUrl =
+      params.get("tournamentUrl") ?? params.get("tournament_url") ?? params.get("tournament");
+
+    if (queryView === "tournament" || queryTournamentUrl) {
+      setViewType("tournament");
+    }
+    if (queryTournamentUrl) {
+      setTournamentFilters((prev) => ({ ...prev, slugOrUrl: queryTournamentUrl }));
+      setPendingQueryApply(true);
+    }
   }, []);
 
   const selectedMonthsBack = useMemo(
@@ -788,7 +804,9 @@ export default function DashboardPage() {
 
   const parseTournamentSlug = (value: string) => {
     const trimmed = value.trim();
-    if (!trimmed) return { slug: "", baseSlug: "", raw: "" };
+    if (!trimmed) {
+      return { slug: "", slugWithPrefix: "", baseSlug: "", baseSlugWithPrefix: "", raw: "" };
+    }
     const parts = trimmed.split("/").filter(Boolean);
     const idx = parts.findIndex((p) => p === "tournament");
     const rawSlug =
@@ -796,7 +814,13 @@ export default function DashboardPage() {
     const baseRaw = rawSlug.replace(/-\d+$/, "");
     const withPrefix = rawSlug.startsWith("tournament/") ? rawSlug : `tournament/${rawSlug}`;
     const baseWithPrefix = baseRaw.startsWith("tournament/") ? baseRaw : `tournament/${baseRaw}`;
-    return { slug: withPrefix, baseSlug: baseWithPrefix, raw: rawSlug };
+    return {
+      slug: rawSlug,
+      slugWithPrefix: withPrefix,
+      baseSlug: baseRaw,
+      baseSlugWithPrefix: baseWithPrefix,
+      raw: rawSlug,
+    };
   };
 
   const buildTournamentQuery = (seriesKey?: string, allowMulti?: boolean) => {
@@ -812,13 +836,23 @@ export default function DashboardPage() {
     if (seriesKey) {
       params.set("series_key", seriesKey);
     } else {
-      const { slug, baseSlug, raw } = parseTournamentSlug(tournamentFilters.slugOrUrl);
-      if (slug) {
+      const {
+        slug,
+        slugWithPrefix,
+        baseSlug,
+        baseSlugWithPrefix,
+        raw,
+      } = parseTournamentSlug(tournamentFilters.slugOrUrl);
+      if (slug || slugWithPrefix) {
         if (raw) params.append("tournament_slug_contains", raw);
         const baseRaw = raw.replace(/-\d+$/, "");
         if (baseRaw && baseRaw !== raw) params.append("tournament_slug_contains", baseRaw);
-        params.append("tournament_slug_contains", slug);
+        if (slug) params.append("tournament_slug_contains", slug);
         if (baseSlug && baseSlug !== slug) params.append("tournament_slug_contains", baseSlug);
+        if (slugWithPrefix) params.append("tournament_slug_contains", slugWithPrefix);
+        if (baseSlugWithPrefix && baseSlugWithPrefix !== slugWithPrefix) {
+          params.append("tournament_slug_contains", baseSlugWithPrefix);
+        }
       }
       if (tournamentFilters.series.trim()) {
         params.set("tournament_contains", tournamentFilters.series.trim());
@@ -846,6 +880,8 @@ export default function DashboardPage() {
     }
     return params;
   };
+
+  const isLikelyUrl = (value: string) => /^https?:\/\//i.test(value.trim());
 
   const loadPrecomputedSeries = (
     params: URLSearchParams,
@@ -953,7 +989,7 @@ export default function DashboardPage() {
       return;
     }
 
-    const { slug } = parseTournamentSlug(tournamentFilters.slugOrUrl);
+    const { slug, slugWithPrefix } = parseTournamentSlug(tournamentFilters.slugOrUrl);
     const monthsBack = TIMEFRAME_TO_MONTHS[tournamentFilters.timeframe] ?? 3;
     const maybeSet = (params: URLSearchParams, key: string, val: string) => {
       if (val.trim().length > 0) params.set(key, val.trim());
@@ -961,7 +997,9 @@ export default function DashboardPage() {
     const DEFAULT_VIDEOGAME_ID = "1386";
 
     // If a specific tournament slug/URL is provided, hit the search endpoint for that exact slug.
-    if (slug) {
+    const urlValue = tournamentFilters.slugOrUrl.trim();
+    const hasUrl = isLikelyUrl(urlValue);
+    if (slug || slugWithPrefix || hasUrl) {
       const params = new URLSearchParams({
         months_back: String(monthsBack),
         limit: "0",
@@ -971,7 +1009,10 @@ export default function DashboardPage() {
       if (tournamentFilters.state.trim()) {
         params.set("state", tournamentFilters.state.trim().toUpperCase());
       }
-      params.append("tournament_slug", slug);
+      if (slug || slugWithPrefix) params.append("tournament_slug", slug || slugWithPrefix);
+      if (hasUrl) {
+        params.set("tournament_url", urlValue);
+      }
       if (tournamentFilters.filterStates.trim()) {
         tournamentFilters.filterStates
           .split(",")
@@ -993,21 +1034,27 @@ export default function DashboardPage() {
       setSelectedSeriesKey(null);
       setIsLoading(true);
       setError(null);
-    fetch(`/api/search/by-slug?${params.toString()}`, { cache: "no-store" })
-      .then((res) => {
-        if (!res.ok) throw new Error(`API error ${res.status}`);
-        return res.json();
-      })
-      .then((json: { results?: PlayerPoint[] }) => {
-        setChartData(json.results ?? []);
-        if ((json.results ?? []).length === 0) {
-          setError("No data found. Check your state parameter and filters.");
-        }
-      })
-      .catch((err) => {
-        setError(`${(err as Error).message} — check your state parameter and filters.`);
-        setChartData([]);
-      })
+      fetch(`/api/search/by-slug?${params.toString()}`, { cache: "no-store" })
+        .then(async (res) => {
+          if (!res.ok) {
+            // Try to capture upstream error details for easier debugging.
+            const data = await res.json().catch(() => null);
+            const upstream = (data as { upstream?: string } | null)?.upstream;
+            const message = upstream ? `API error ${res.status}: ${upstream}` : `API error ${res.status}`;
+            throw new Error(message);
+          }
+          return res.json();
+        })
+        .then((json: { results?: PlayerPoint[] }) => {
+          setChartData(json.results ?? []);
+          if ((json.results ?? []).length === 0) {
+            setError("No data found. Check your state parameter and filters.");
+          }
+        })
+        .catch((err) => {
+          setError(`${(err as Error).message} — check your state parameter and filters.`);
+          setChartData([]);
+        })
         .finally(() => setIsLoading(false));
       return;
     }
@@ -1051,6 +1098,14 @@ export default function DashboardPage() {
     setSelectedSeriesKey(null);
     setHideOutliers(false);
   };
+
+  useEffect(() => {
+    if (!pendingQueryApply) return;
+    if (viewType !== "tournament") return;
+    if (!tournamentFilters.slugOrUrl.trim()) return;
+    handleApply();
+    setPendingQueryApply(false);
+  }, [pendingQueryApply, viewType, tournamentFilters.slugOrUrl, handleApply]);
 
   const ChartTooltip = ({ active, payload }: TooltipContentProps<number, string>) => {
     if (!active || !payload?.length) return null;
