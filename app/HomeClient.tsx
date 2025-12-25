@@ -13,6 +13,7 @@ import {
   YAxis,
 } from "recharts";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import LetterSwapForward from "@/components/fancy/text/letter-swap-forward-anim";
 
 type SplashPhase = "full" | "compact" | "hidden";
@@ -578,23 +579,7 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
           </div>
         </section>
 
-        <footer className="footer">
-          <div className="text-sm font-semibold uppercase tracking-[0.3em] text-foreground/80">
-            s.w
-          </div>
-          <div className="footer__links">
-            <a href="https://github.com/ozdotdotdot/smashDA" target="_blank" rel="noreferrer">
-              GitHub
-            </a>
-            <a href="https://twitter.com" target="_blank" rel="noreferrer">
-              Twitter/X
-            </a>
-            <a href="mailto:hello@smash.watch">Email</a>
-          </div>
-          <p className="text-xs text-foreground/55">
-            Personal project by Ozair Khan. Not affiliated with Nintendo or start.gg.
-          </p>
-        </footer>
+        <Footer />
       </main>
     </div>
   );

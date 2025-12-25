@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+
 export const metadata: Metadata = {
   title: "About Smash Watch",
   description:
     "Learn about Smash Watch’s mission, founding story, and the values that guide how we surface competitive Smash data.",
 };
 
-import Header from "@/components/Header";
-
 export default function AboutPage() {
   return (
     <>
       <Header mainVisible />
-      <main className="about-page">
-        <section className="about-hero">
+      <div className="about-shell">
+        <main className="about-page">
+          <section className="about-hero">
         <p className="about-hero__eyebrow">About Smash Watch</p>
         <h1 className="about-hero__title">We turn raw data into living Smash stories.</h1>
         <p className="about-hero__body">
@@ -64,7 +66,9 @@ export default function AboutPage() {
           </p>
         </div>
       </section>
-    </main>
+        </main>
+        <Footer />
+      </div>
   </>
   );
 }
