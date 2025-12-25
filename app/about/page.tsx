@@ -7,10 +7,14 @@ export const metadata: Metadata = {
     "Learn about Smash Watch’s mission, founding story, and the values that guide how we surface competitive Smash data.",
 };
 
+import Header from "@/components/Header";
+
 export default function AboutPage() {
   return (
-    <main className="about-page">
-      <section className="about-hero">
+    <>
+      <Header mainVisible />
+      <main className="about-page">
+        <section className="about-hero">
         <p className="about-hero__eyebrow">About Smash Watch</p>
         <h1 className="about-hero__title">We turn raw data into living Smash stories.</h1>
         <p className="about-hero__body">
@@ -61,5 +65,6 @@ export default function AboutPage() {
         </div>
       </section>
     </main>
+  </>
   );
 }
