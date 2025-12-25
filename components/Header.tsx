@@ -50,6 +50,9 @@ export default function Header({ mainVisible }: HeaderProps) {
           <Link href="/howitworks" className="site-nav__link">
             <LetterSwapForward label="How it Works" staggerDuration={0} />
           </Link>
+          <Link href="/about" className="site-nav__link">
+            <LetterSwapForward label="About" staggerDuration={0} />
+          </Link>
           <a href="https://docs.smash.watch" className="site-nav__link" target="_blank" rel="noreferrer">
             <LetterSwapForward label="Docs" staggerDuration={0} />
           </a>
@@ -97,6 +100,9 @@ export default function Header({ mainVisible }: HeaderProps) {
           </Link>
           <Link href="/howitworks" className="site-nav__link" onClick={() => setNavOpen(false)}>
             <LetterSwapForward label="How it Works" staggerDuration={0} />
+          </Link>
+          <Link href="/about" className="site-nav__link" onClick={() => setNavOpen(false)}>
+            <LetterSwapForward label="About" staggerDuration={0} />
           </Link>
           <a
             href="https://docs.smash.watch"
