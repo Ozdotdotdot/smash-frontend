@@ -974,6 +974,17 @@ body {
   pointer-events: auto;
 }
 
+.page-shell--fluid {
+  max-width: none;
+  margin: 0;
+}
+
+.page-shell--flush {
+  padding-left: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+}
+
 .hero-shell {
   position: relative;
   overflow: hidden;
