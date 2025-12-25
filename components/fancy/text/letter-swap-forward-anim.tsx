@@ -23,8 +23,8 @@ const LetterSwapForward = ({
   label,
   reverse = true,
   transition = {
-    type: "spring",
     duration: 0.7,
+    easing: "cubic-bezier(0.22, 1, 0.36, 1)",
   },
   staggerDuration = 0.03,
   staggerFrom = "first",
@@ -34,7 +34,7 @@ const LetterSwapForward = ({
 }: TextProps) => {
   const scopeRef = useRef<HTMLSpanElement | null>(null)
   const [blocked, setBlocked] = useState(false)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>[]>([])
+  const timeoutRef = useRef<Array<ReturnType<typeof setTimeout>>>([])
 
   useEffect(() => {
     return () => {
@@ -72,7 +72,7 @@ const LetterSwapForward = ({
   }
 
   const scheduleTimeout = (cb: () => void, delay: number) => {
-    const timer = window.setTimeout(cb, delay)
+    const timer = setTimeout(cb, delay)
     timeoutRef.current.push(timer)
     return timer
   }
