@@ -575,6 +575,7 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
               body="smash.watch is a personal project by Ozair Khan. A local GA Marth/Sheik player. 
               The goal was to provide a way to see how
               you stack up in your community based purely off data."
+              href="/about"
             />
           </div>
         </section>
