@@ -185,7 +185,7 @@ export default function HowItWorksClient({ mobileSvgMarkup }: { mobileSvgMarkup:
             <a href="https://twitter.com" target="_blank" rel="noreferrer">
               Twitter/X
             </a>
-            <a href="mailto:hello@smash.watch">Email</a>
+            <a href="mailto:ozair@smash.watch">Email</a>
           </div>
           <p className="text-xs text-foreground/55">
             Personal project by Ozair Khan. Not affiliated with Nintendo or start.gg.
