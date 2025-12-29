@@ -12,6 +12,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import LetterSwapForward from "@/components/fancy/text/letter-swap-forward-anim";
 
 type SplashPhase = "full" | "compact" | "hidden";
@@ -174,7 +176,6 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
   };
   const frames = ["smash.watch", "smas.wtch", "sma.wch", "ss.wh", "s.w"];
   const [frameIndex, setFrameIndex] = useState(0);
-  const [navOpen, setNavOpen] = useState(false);
   const dataSources: DataSource[] = [
     {
       id: "ny-featured",
@@ -302,14 +303,6 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
   }, [initialSkipSplash]);
 
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 900) setNavOpen(false);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
     setHideOutliers(selectedSourceId === "wa-port-priority-9");
   }, [selectedSourceId]);
 
@@ -377,14 +370,6 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
     return () => controller.abort();
   }, [apiUrl, mainVisible]);
 
-  const [navStuck, setNavStuck] = useState(false);
-  useEffect(() => {
-    const handleStick = () => setNavStuck(window.scrollY > 4);
-    handleStick();
-    window.addEventListener("scroll", handleStick);
-    return () => window.removeEventListener("scroll", handleStick);
-  }, []);
-
   return (
     <div className="relative min-h-screen bg-background text-foreground">
       {!initialSkipSplash ? (
@@ -412,113 +397,7 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
       ) : null}
 
       <main className={`page-shell ${mainVisible ? "page-shell--visible" : ""}`} aria-hidden={!mainVisible}>
-        <nav
-          className={[
-            "site-nav",
-            mainVisible ? "site-nav--visible" : "",
-            navStuck ? "site-nav--stuck" : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          <div className="site-nav__inner">
-            <Link href="/?skipSplash=1" className="site-nav__brand" onClick={() => setNavOpen(false)}>
-              <span className="site-nav__logo-dot" />
-              <span className="site-nav__wordmark">smash.watch</span>
-            </Link>
-            <div className="site-nav__links site-nav__links--desktop">
-              <Link href="/dashboard" className="site-nav__link">
-                <LetterSwapForward label="Dashboard" staggerDuration={0} />
-              </Link>
-              <Link href="/howitworks" className="site-nav__link">
-                <LetterSwapForward label="How it Works" staggerDuration={0} />
-              </Link>
-              <a
-                href="https://docs.smash.watch"
-                className="site-nav__link"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <LetterSwapForward label="Docs" staggerDuration={0} />
-              </a>
-            </div>
-            <a
-              className="site-nav__cta site-nav__cta--desktop"
-              href="https://github.com/ozdotdotdot/smashDA"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <svg
-                aria-hidden
-                className="site-nav__star"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 3.5 14.9 9l5.6.8-4 3.9.9 5.6L12 16.7 6.6 19.3l.9-5.6-4-3.9L9 9l3-5.5Z" />
-              </svg>
-              Star on GitHub
-            </a>
-            <button
-              className="site-nav__toggle"
-              type="button"
-              aria-expanded={navOpen}
-              aria-label="Toggle navigation"
-              aria-controls="site-nav-mobile"
-              onClick={() => setNavOpen((v) => !v)}
-            >
-              <span className="site-nav__toggle-line" />
-              <span className="site-nav__toggle-line" />
-            </button>
-          </div>
-          <div
-            id="site-nav-mobile"
-            className={`site-nav__mobile ${navOpen ? "site-nav__mobile--open" : ""}`}
-            aria-hidden={!navOpen}
-          >
-            <div className="site-nav__links site-nav__links--mobile">
-              <Link href="/dashboard" className="site-nav__link" onClick={() => setNavOpen(false)}>
-                <LetterSwapForward label="Dashboard" staggerDuration={0} />
-              </Link>
-              <Link href="/howitworks" className="site-nav__link" onClick={() => setNavOpen(false)}>
-                <LetterSwapForward label="How it Works" staggerDuration={0} />
-              </Link>
-              <a
-                href="https://docs.smash.watch"
-                className="site-nav__link"
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => setNavOpen(false)}
-              >
-                <LetterSwapForward label="Docs" staggerDuration={0} />
-              </a>
-            </div>
-            <a
-              className="site-nav__cta site-nav__cta--mobile"
-              href="https://github.com/ozdotdotdot/smashDA"
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => setNavOpen(false)}
-            >
-              <svg
-                aria-hidden
-                className="site-nav__star"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 3.5 14.9 9l5.6.8-4 3.9.9 5.6L12 16.7 6.6 19.3l.9-5.6-4-3.9L9 9l3-5.5Z" />
-              </svg>
-              Star on GitHub
-            </a>
-          </div>
-        </nav>
+        <Header mainVisible={mainVisible} />
 
         <header className="flex w-full flex-col gap-6">
           <div className="hero-banner">
@@ -696,27 +575,12 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
               body="smash.watch is a personal project by Ozair Khan. A local GA Marth/Sheik player. 
               The goal was to provide a way to see how
               you stack up in your community based purely off data."
+              href="/about"
             />
           </div>
         </section>
 
-        <footer className="footer">
-          <div className="text-sm font-semibold uppercase tracking-[0.3em] text-foreground/80">
-            s.w
-          </div>
-          <div className="footer__links">
-            <a href="https://github.com/ozdotdotdot/smashDA" target="_blank" rel="noreferrer">
-              GitHub
-            </a>
-            <a href="https://twitter.com" target="_blank" rel="noreferrer">
-              Twitter/X
-            </a>
-            <a href="mailto:ozair@smash.watch">Email</a>
-          </div>
-          <p className="text-xs text-foreground/55">
-            Personal project by Ozair Khan. Not affiliated with Nintendo or start.gg.
-          </p>
-        </footer>
+        <Footer />
       </main>
     </div>
   );
