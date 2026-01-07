@@ -18,7 +18,7 @@ This repo is the Next.js/TypeScript frontend for **Smash Watch**, a data-visuali
 
 Next.js 16, React 19, TypeScript, Tailwind CSS, Recharts, shadcn/ui-style components, ESLint.
 
-## What I learned / practiced
+## What I learned / practiced 
 
 - Designing UX for “messy” real-world analytics (filters, defaults, edge cases, progressive disclosure).
 - Building reliable client ↔ API boundaries (proxy routes, query param plumbing, error handling).
