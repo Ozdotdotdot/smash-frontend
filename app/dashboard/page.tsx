@@ -1119,9 +1119,11 @@ export default function DashboardPage() {
       setPendingMobileClose(false);
       return;
     }
-    setIsMobilePanelOpen(false);
-    setPendingMobileClose(false);
-  }, [pendingMobileClose, isLoading, seriesOptions.length]);
+    if (chartData.length > 0) {
+      setIsMobilePanelOpen(false);
+      setPendingMobileClose(false);
+    }
+  }, [pendingMobileClose, isLoading, seriesOptions.length, chartData.length]);
 
   const ChartTooltip = ({ active, payload }: TooltipContentProps<number, string>) => {
     if (!active || !payload?.length) return null;
