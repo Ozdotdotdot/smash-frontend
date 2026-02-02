@@ -1202,7 +1202,7 @@ export default function DashboardPage() {
       <main className="page-shell page-shell--visible page-shell--fluid page-shell--flush">
         <Header mainVisible />
 
-        <div className="relative z-10 flex min-h-screen">
+        <div className="relative z-10 flex min-h-0 flex-1">
           <aside
             className={`relative hidden shrink-0 flex-col gap-4 border-r border-white/10 bg-black/20 p-4 backdrop-blur transition-all duration-200 md:flex ${
               isDesktopCollapsed ? "w-12" : "w-72"
