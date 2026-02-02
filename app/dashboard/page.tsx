@@ -681,6 +681,7 @@ export default function DashboardPage() {
   const [selectedSeriesKey, setSelectedSeriesKey] = useState<string | null>(null);
   const [hideOutliers, setHideOutliers] = useState(false);
   const [pendingQueryApply, setPendingQueryApply] = useState(false);
+  const [pendingMobileClose, setPendingMobileClose] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1047,6 +1048,28 @@ export default function DashboardPage() {
     loadPrecomputedSeries(params, allowMultiSeries);
   };
 
+  const handleApplyFromMobile = () => {
+    const hasSlugOrUrl = tournamentFilters.slugOrUrl.trim().length > 0;
+    const hasSeriesQuery = tournamentFilters.series.trim().length > 0;
+
+    if (viewType === "state" || (viewType === "tournament" && hasSlugOrUrl)) {
+      setPendingMobileClose(false);
+      setIsMobilePanelOpen(false);
+      handleApply();
+      return;
+    }
+
+    if (viewType === "tournament" && hasSeriesQuery) {
+      setPendingMobileClose(true);
+      handleApply();
+      return;
+    }
+
+    setPendingMobileClose(false);
+    setIsMobilePanelOpen(false);
+    handleApply();
+  };
+
   const handleReset = () => {
     setViewType("state");
     setStateFilters({
@@ -1088,6 +1111,17 @@ export default function DashboardPage() {
     handleApply();
     setPendingQueryApply(false);
   }, [pendingQueryApply, viewType, tournamentFilters.slugOrUrl, handleApply]);
+
+  useEffect(() => {
+    if (!pendingMobileClose) return;
+    if (isLoading) return;
+    if (seriesOptions.length > 0) {
+      setPendingMobileClose(false);
+      return;
+    }
+    setIsMobilePanelOpen(false);
+    setPendingMobileClose(false);
+  }, [pendingMobileClose, isLoading, seriesOptions.length]);
 
   const ChartTooltip = ({ active, payload }: TooltipContentProps<number, string>) => {
     if (!active || !payload?.length) return null;
@@ -1417,7 +1451,7 @@ export default function DashboardPage() {
               setStateFilters={setStateFilters}
               tournamentFilters={tournamentFilters}
               setTournamentFilters={setTournamentFilters}
-              onApply={handleApply}
+              onApply={handleApplyFromMobile}
               onReset={handleReset}
               allowMultiSeries={allowMultiSeries}
               setAllowMultiSeries={setAllowMultiSeries}
@@ -1428,6 +1462,8 @@ export default function DashboardPage() {
               onSelectSeries={(key) => {
                 setSelectedSeriesKey(key);
                 loadPrecomputedSeries(buildTournamentQuery(key, false), false);
+                setPendingMobileClose(false);
+                setIsMobilePanelOpen(false);
               }}
               hideOutliers={hideOutliers}
               setHideOutliers={setHideOutliers}
