@@ -189,13 +189,14 @@ function FilterPanel({
   onSelectSeries,
   hideOutliers,
   setHideOutliers,
+  enterBehavior,
 }: {
   viewType: ViewType;
-  setViewType: (value: ViewType) => void;
+  setViewType: Dispatch<SetStateAction<ViewType>>;
   stateFilters: StateFilters;
-  setStateFilters: (value: StateFilters) => void;
+  setStateFilters: Dispatch<SetStateAction<StateFilters>>;
   tournamentFilters: TournamentFilters;
-  setTournamentFilters: (value: TournamentFilters) => void;
+  setTournamentFilters: Dispatch<SetStateAction<TournamentFilters>>;
   onApply: () => void;
   onReset: () => void;
   allowMultiSeries: boolean;
@@ -207,8 +208,20 @@ function FilterPanel({
   onSelectSeries: (key: string) => void;
   hideOutliers: boolean;
   setHideOutliers: (value: boolean) => void;
+  enterBehavior: "apply" | "blur";
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const handleEnter = (
+    event: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    if (enterBehavior === "blur") {
+      (event.currentTarget as HTMLElement).blur();
+      return;
+    }
+    onApply();
+  };
 
   const labelWithTooltip = (label: string, tooltip: string) => (
     <div className="flex items-center gap-2">
@@ -265,6 +278,7 @@ function FilterPanel({
               onChange={(event) =>
                 setter({ ...filters, filterStates: event.target.value })
               }
+              onKeyDown={handleEnter}
             />
           </label>
 
@@ -279,6 +293,7 @@ function FilterPanel({
               className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
               value={filters.characters}
               onChange={(event) => setter({ ...filters, characters: event.target.value })}
+              onKeyDown={handleEnter}
             />
           </label>
 
@@ -294,6 +309,7 @@ function FilterPanel({
               className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
               value={filters.minEntrants}
               onChange={(event) => setter({ ...filters, minEntrants: event.target.value })}
+              onKeyDown={handleEnter}
             />
           </label>
 
@@ -309,6 +325,7 @@ function FilterPanel({
               className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus:border-white/40"
               value={filters.maxEntrants}
               onChange={(event) => setter({ ...filters, maxEntrants: event.target.value })}
+              onKeyDown={handleEnter}
             />
           </label>
 
@@ -326,6 +343,7 @@ function FilterPanel({
               onChange={(event) =>
                 setter({ ...filters, minMaxEventEntrants: event.target.value })
               }
+              onKeyDown={handleEnter}
             />
           </label>
 
@@ -343,6 +361,7 @@ function FilterPanel({
               onChange={(event) =>
                 setter({ ...filters, largeEventThreshold: event.target.value })
               }
+              onKeyDown={handleEnter}
             />
           </label>
 
@@ -362,6 +381,7 @@ function FilterPanel({
               onChange={(event) =>
                 setter({ ...filters, minLargeEventShare: event.target.value })
               }
+              onKeyDown={handleEnter}
             />
           </label>
 
@@ -375,6 +395,7 @@ function FilterPanel({
               className="rounded-md border border-white/15 bg-black/30 px-3 py-2 text-foreground shadow-inner outline-none transition hover:border-white/25 focus-border-white/40"
               value={filters.startAfter}
               onChange={(event) => setter({ ...filters, startAfter: event.target.value })}
+              onKeyDown={handleEnter}
             />
           </label>
         </div>
@@ -426,6 +447,7 @@ function FilterPanel({
                 onChange={(event) =>
                   setStateFilters({ ...stateFilters, region: event.target.value })
                 }
+                onKeyDown={handleEnter}
               />
             </label>
 
@@ -438,6 +460,7 @@ function FilterPanel({
               onChange={(event) =>
                 setStateFilters({ ...stateFilters, timeframe: event.target.value })
               }
+              onKeyDown={handleEnter}
             >
               {TIMEFRAME_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -499,6 +522,7 @@ function FilterPanel({
                 onChange={(event) =>
                   setTournamentFilters({ ...tournamentFilters, state: event.target.value })
                 }
+                onKeyDown={handleEnter}
               />
             </label>
 
@@ -512,6 +536,7 @@ function FilterPanel({
                 onChange={(event) =>
                   setTournamentFilters({ ...tournamentFilters, series: event.target.value })
                 }
+                onKeyDown={handleEnter}
               />
               <div className="mt-1 flex items-center justify-between text-[11px] text-foreground/60">
                 <span>Allow multiple series?</span>
@@ -540,6 +565,7 @@ function FilterPanel({
                 onChange={(event) =>
                   setTournamentFilters({ ...tournamentFilters, slugOrUrl: event.target.value })
                 }
+                onKeyDown={handleEnter}
               />
               <div className="mt-1 flex items-center justify-between text-[11px] text-foreground/60">
                 <span>Force live fetch?</span>
@@ -563,6 +589,7 @@ function FilterPanel({
               onChange={(event) =>
                 setTournamentFilters({ ...tournamentFilters, timeframe: event.target.value })
               }
+              onKeyDown={handleEnter}
             >
               {TIMEFRAME_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -1250,6 +1277,7 @@ export default function DashboardPage() {
                 }}
                 hideOutliers={hideOutliers}
                 setHideOutliers={setHideOutliers}
+                enterBehavior="apply"
               />
             )}
           </aside>
@@ -1469,6 +1497,7 @@ export default function DashboardPage() {
               }}
               hideOutliers={hideOutliers}
               setHideOutliers={setHideOutliers}
+              enterBehavior="blur"
             />
           </aside>
         </div>
