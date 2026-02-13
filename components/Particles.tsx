@@ -96,6 +96,7 @@ type ParticlesProps = {
   disableRotation?: boolean
   pixelRatio?: number
   className?: string
+  onInitError?: (error: unknown) => void
 }
 
 const Particles = ({
@@ -112,22 +113,63 @@ const Particles = ({
   disableRotation = false,
   pixelRatio = 1,
   className,
+  onInitError,
 }: ParticlesProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mouseRef = useRef({ x: 0, y: 0 })
+  const hasNotifiedInitErrorRef = useRef(false)
 
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
-    const renderer = new Renderer({
-      dpr: pixelRatio,
-      depth: false,
-      alpha: true,
-    })
-    const gl = renderer.gl
-    container.appendChild(gl.canvas)
-    gl.clearColor(0, 0, 0, 0)
+    const reportInitError = (error: unknown) => {
+      if (hasNotifiedInitErrorRef.current) return
+      hasNotifiedInitErrorRef.current = true
+      onInitError?.(error)
+    }
+
+    const hasWebGLSupport = () => {
+      if (typeof window === "undefined") return false
+      try {
+        const canvas = document.createElement("canvas")
+        return Boolean(
+          canvas.getContext("webgl2") ||
+            canvas.getContext("webgl") ||
+            canvas.getContext("experimental-webgl"),
+        )
+      } catch {
+        return false
+      }
+    }
+
+    if (!hasWebGLSupport()) {
+      reportInitError(new Error("WebGL context is unavailable"))
+      return
+    }
+
+    let renderer: Renderer | null = null
+    let gl: Renderer["gl"] | null = null
+    try {
+      renderer = new Renderer({
+        dpr: pixelRatio,
+        depth: false,
+        alpha: true,
+      })
+      gl = renderer.gl
+      const domCanvas = gl.canvas instanceof HTMLCanvasElement ? gl.canvas : null
+      if (domCanvas) {
+        container.appendChild(domCanvas)
+      }
+      gl.clearColor(0, 0, 0, 0)
+    } catch (error) {
+      reportInitError(error)
+      return
+    }
+    if (!renderer || !gl) {
+      reportInitError(new Error("WebGL renderer failed to initialize"))
+      return
+    }
 
     const camera = new Camera(gl, { fov: 15 })
     camera.position.set(0, 0, cameraDistance)
@@ -221,7 +263,12 @@ const Particles = ({
         particles.rotation.z += 0.01 * speed
       }
 
-      renderer.render({ scene: particles, camera })
+      try {
+        renderer.render({ scene: particles, camera })
+      } catch (error) {
+        if (animationFrameId) cancelAnimationFrame(animationFrameId)
+        reportInitError(error)
+      }
     }
 
     animationFrameId = requestAnimationFrame(update)
@@ -232,8 +279,9 @@ const Particles = ({
         container.removeEventListener("mousemove", handleMouseMove)
       }
       if (animationFrameId) cancelAnimationFrame(animationFrameId)
-      if (container.contains(gl.canvas)) {
-        container.removeChild(gl.canvas)
+      const domCanvas = gl.canvas instanceof HTMLCanvasElement ? gl.canvas : null
+      if (domCanvas && container.contains(domCanvas)) {
+        container.removeChild(domCanvas)
       }
     }
   }, [
@@ -249,6 +297,7 @@ const Particles = ({
     disableRotation,
     pixelRatio,
     particleColors,
+    onInitError,
   ])
 
   return <div ref={containerRef} className={cn("relative h-full w-full", className)} />

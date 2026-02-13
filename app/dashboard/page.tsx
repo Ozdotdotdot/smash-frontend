@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { Info } from "lucide-react";
 import {
   CartesianGrid,
@@ -709,6 +709,14 @@ export default function DashboardPage() {
   const [hideOutliers, setHideOutliers] = useState(false);
   const [pendingQueryApply, setPendingQueryApply] = useState(false);
   const [pendingMobileClose, setPendingMobileClose] = useState(false);
+  const [particlesFallbackActive, setParticlesFallbackActive] = useState(false);
+  const [showParticlesWarning, setShowParticlesWarning] = useState(false);
+
+  const handleParticlesInitError = useCallback((error: unknown) => {
+    console.error("Dashboard background disabled: WebGL particles failed to initialize.", error);
+    setParticlesFallbackActive(true);
+    setShowParticlesWarning(true);
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1210,20 +1218,25 @@ export default function DashboardPage() {
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
-      {/* Particles Background */}
+      {/* Background (animated when WebGL works, static fallback when it does not) */}
       <div className="fixed inset-0 z-0">
-        <Particles
-          particleCount={PARTICLES_CONFIG.particleCount}
-          particleSpread={PARTICLES_CONFIG.particleSpread}
-          speed={PARTICLES_CONFIG.speed}
-          particleBaseSize={PARTICLES_CONFIG.particleBaseSize}
-          moveParticlesOnHover={PARTICLES_CONFIG.moveParticlesOnHover}
-          alphaParticles={PARTICLES_CONFIG.alphaParticles}
-          disableRotation={PARTICLES_CONFIG.disableRotation}
-          pixelRatio={PARTICLES_CONFIG.pixelRatio}
-          particleColors={PARTICLES_CONFIG.particleColors}
-          className=""
-        />
+        {particlesFallbackActive ? (
+          <div className="h-full w-full bg-[#060910]" />
+        ) : (
+          <Particles
+            particleCount={PARTICLES_CONFIG.particleCount}
+            particleSpread={PARTICLES_CONFIG.particleSpread}
+            speed={PARTICLES_CONFIG.speed}
+            particleBaseSize={PARTICLES_CONFIG.particleBaseSize}
+            moveParticlesOnHover={PARTICLES_CONFIG.moveParticlesOnHover}
+            alphaParticles={PARTICLES_CONFIG.alphaParticles}
+            disableRotation={PARTICLES_CONFIG.disableRotation}
+            pixelRatio={PARTICLES_CONFIG.pixelRatio}
+            particleColors={PARTICLES_CONFIG.particleColors}
+            onInitError={handleParticlesInitError}
+            className=""
+          />
+        )}
       </div>
 
       <main className="page-shell page-shell--visible page-shell--fluid page-shell--flush">
@@ -1313,6 +1326,24 @@ export default function DashboardPage() {
                 </a>
               </div>
               <div className="mt-4 space-y-3">
+                {particlesFallbackActive && showParticlesWarning && (
+                  <div className="flex items-start justify-between gap-3 rounded-md border border-amber-300/35 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
+                    <p>
+                      Running in compatibility mode: the background animation was disabled because
+                      this browser could not start WebGL. The dashboard should still work, but may
+                      feel slower. If the page still has issues, enable hardware acceleration and
+                      check the browser console for technical details.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowParticlesWarning(false)}
+                      className="shrink-0 rounded border border-amber-200/30 px-2 py-1 text-xs font-semibold text-amber-100 transition hover:bg-amber-400/10"
+                      aria-label="Dismiss compatibility warning"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                )}
                 {error && (
                   <div className="rounded-md border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
                     {error}
