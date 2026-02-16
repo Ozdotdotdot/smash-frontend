@@ -8,8 +8,6 @@ const AVAILABLE_REGIONS = [
   "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
 ] as const;
 
-type RegionCode = (typeof AVAILABLE_REGIONS)[number];
-
 async function safeFetch(
   url: string,
   params: Record<string, string>,

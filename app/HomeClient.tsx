@@ -16,6 +16,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { registerNavigationTool, unregisterNavigationTool } from "@/lib/webmcp-navigation";
 import LetterSwapForward from "@/components/fancy/text/letter-swap-forward-anim";
+import type { PlayerPoint } from "@/lib/types";
 
 type SplashPhase = "full" | "compact" | "hidden";
 
@@ -23,14 +24,6 @@ type DataSource = {
   id: string;
   label: string;
   api: string;
-};
-
-type PlayerPoint = {
-  player_id?: number;
-  gamer_tag: string;
-  weighted_win_rate: number;
-  opponent_strength: number;
-  home_state?: string;
 };
 
 type FilteredData = {
