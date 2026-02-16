@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { registerNavigationTool, unregisterNavigationTool } from "@/lib/webmcp-navigation";
 import LetterSwapForward from "@/components/fancy/text/letter-swap-forward-anim";
 
 type SplashPhase = "full" | "compact" | "hidden";
@@ -137,6 +138,11 @@ function formatStrengthTick(value: number) {
 }
 
 export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: boolean }) {
+  useEffect(() => {
+    registerNavigationTool();
+    return () => unregisterNavigationTool();
+  }, []);
+
   const [phase, setPhase] = useState<SplashPhase>(() =>
     initialSkipSplash ? "hidden" : "full"
   );
