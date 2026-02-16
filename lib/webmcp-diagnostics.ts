@@ -176,7 +176,23 @@ export async function runWebMCPDiagnostics(
 }
 
 export function installWebMCPDebugHelpers(page: WebMCPDebugPage): () => void {
-  if (typeof window === "undefined" || process.env.NODE_ENV === "production") {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const queryEnabled = urlParams.get("webmcpDebug") === "1";
+  const localStorageEnabled = (() => {
+    try {
+      return window.localStorage.getItem("webmcpDebug") === "1";
+    } catch {
+      return false;
+    }
+  })();
+  const allowInThisSession =
+    process.env.NODE_ENV !== "production" || queryEnabled || localStorageEnabled;
+
+  if (!allowInThisSession) {
     return () => {};
   }
 

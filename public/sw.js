@@ -65,7 +65,9 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(() => undefined);
 
-      return cached ?? (await fetchPromise) ?? (await cache.match(OFFLINE_URL)) ?? new Response("Offline", { status: 503 });
+      // Never return HTML offline fallback for JS/CSS/image requests.
+      // If the network is down and no cached asset exists, let the request fail naturally.
+      return cached ?? (await fetchPromise) ?? Response.error();
     })()
   );
 });

@@ -6,6 +6,7 @@ This project exposes WebMCP tools on:
 - `/`: `getSiteCapabilities`
 
 In development builds, a helper is exposed at `window.webmcpDebug`.
+In production builds, enable it explicitly with `?webmcpDebug=1` (or `localStorage.setItem("webmcpDebug", "1")`).
 
 ## Quick verification
 
@@ -49,3 +50,12 @@ window.webmcpDebug.getSpyState()
 ```
 
 If `navigator.modelContextTesting.getTools` is unavailable in your Canary build, use `getSpyState()` to confirm whether your page called `registerTool` and which tool names are currently tracked.
+
+## Production checks
+
+Use:
+
+- `https://your-domain/dashboard?webmcpDebug=1`
+- `https://your-domain/?webmcpDebug=1`
+
+Then run the same console probes (`window.webmcpDebug.run()` / `window.webmcpDebug.getSpyState()`).
