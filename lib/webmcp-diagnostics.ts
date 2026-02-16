@@ -87,9 +87,17 @@ function installModelContextSpy(): WebMCPSpyState {
 
 async function getTestingTools(): Promise<ModelContextTool[]> {
   const testing = navigator.modelContextTesting;
-  if (!testing || typeof testing.getTools !== "function") return [];
+  if (!testing) return [];
 
-  const tools = await testing.getTools();
+  const listToolsFn =
+    typeof testing.getTools === "function"
+      ? testing.getTools.bind(testing)
+      : typeof testing.listTools === "function"
+        ? testing.listTools.bind(testing)
+        : undefined;
+  if (!listToolsFn) return [];
+
+  const tools = await listToolsFn();
   return Array.isArray(tools) ? tools : [];
 }
 
@@ -112,19 +120,26 @@ async function callTool(
     return { error: "modelContextTesting is unavailable" };
   }
 
-  if (typeof testing.callTool === "function") {
+  const executeFn =
+    typeof testing.callTool === "function"
+      ? testing.callTool.bind(testing)
+      : typeof testing.executeTool === "function"
+        ? testing.executeTool.bind(testing)
+        : undefined;
+
+  if (executeFn) {
     try {
-      return await testing.callTool(name, input);
+      return await executeFn(name, input);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      return { error: "Tool call failed via callTool", details: message };
+      return { error: "Tool call failed via testing API", details: message };
     }
   }
 
   const tools = await getTestingTools();
   const tool = tools.find((candidate) => candidate.name === name);
   if (!tool || typeof tool.execute !== "function") {
-    return { error: "modelContextTesting.callTool is unavailable" };
+    return { error: "modelContextTesting tool execution methods are unavailable" };
   }
 
   try {

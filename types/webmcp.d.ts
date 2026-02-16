@@ -17,11 +17,16 @@ export interface ModelContext {
 }
 
 export interface ModelContextTesting {
-  getTools(): ModelContextTool[] | Promise<ModelContextTool[]>;
-  callTool(
+  getTools?: () => ModelContextTool[] | Promise<ModelContextTool[]>;
+  listTools?: () => ModelContextTool[] | Promise<ModelContextTool[]>;
+  callTool?: (
     name: string,
     input: Record<string, unknown>,
-  ): Promise<unknown>;
+  ) => Promise<unknown>;
+  executeTool?: (
+    name: string,
+    input: Record<string, unknown>,
+  ) => Promise<unknown>;
 }
 
 export type WebMCPDebugPage = "dashboard" | "root";

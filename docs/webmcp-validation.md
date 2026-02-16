@@ -51,6 +51,8 @@ window.webmcpDebug.getSpyState()
 
 If `navigator.modelContextTesting.getTools` is unavailable in your Canary build, use `getSpyState()` to confirm whether your page called `registerTool` and which tool names are currently tracked.
 
+Some Canary builds expose `listTools` / `executeTool` instead of `getTools` / `callTool`. Either shape is supported by `window.webmcpDebug`.
+
 ## Production checks
 
 Use:

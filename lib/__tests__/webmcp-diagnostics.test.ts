@@ -63,12 +63,38 @@ describe("webmcp diagnostics helper", () => {
 
   it("runWebMCPDiagnostics('root') reports missing getSiteCapabilities when not registered", async () => {
     setModelContextTesting({
-      getTools: vi.fn().mockReturnValue([{ name: "getRegionStats" }]),
-      callTool: vi.fn(async () => ({ ok: true })),
+      listTools: vi.fn().mockReturnValue([{ name: "getRegionStats" }]),
+      executeTool: vi.fn(async () => ({ ok: true })),
     });
 
     const report = await runWebMCPDiagnostics("root");
     expect(report.missingTools).toEqual(["getSiteCapabilities"]);
+  });
+
+  it("getRegisteredToolNames supports listTools() shape", async () => {
+    setModelContextTesting({
+      listTools: vi.fn().mockReturnValue([
+        { name: "getRegionStats" },
+        { name: "getAvailableRegions" },
+      ]),
+    });
+
+    const names = await getRegisteredToolNames();
+    expect(names).toEqual(["getRegionStats", "getAvailableRegions"]);
+  });
+
+  it("runWebMCPDiagnostics supports executeTool() shape", async () => {
+    setModelContextTesting({
+      listTools: vi.fn().mockReturnValue([{ name: "getSiteCapabilities" }]),
+      executeTool: vi.fn(async (name: string) => ({ ok: true, name })),
+    });
+
+    const report = await runWebMCPDiagnostics("root");
+    expect(report.missingTools).toEqual([]);
+    expect(report.calls.getSiteCapabilities).toEqual({
+      ok: true,
+      name: "getSiteCapabilities",
+    });
   });
 
   it("runWebMCPDiagnostics uses execute fallback when callTool is unavailable", async () => {
