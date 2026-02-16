@@ -15,6 +15,7 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { registerNavigationTool, unregisterNavigationTool } from "@/lib/webmcp-navigation";
+import { installWebMCPDebugHelpers } from "@/lib/webmcp-diagnostics";
 import LetterSwapForward from "@/components/fancy/text/letter-swap-forward-anim";
 import type { PlayerPoint } from "@/lib/types";
 
@@ -133,7 +134,11 @@ function formatStrengthTick(value: number) {
 export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: boolean }) {
   useEffect(() => {
     registerNavigationTool();
-    return () => unregisterNavigationTool();
+    const cleanupDebug = installWebMCPDebugHelpers("root");
+    return () => {
+      cleanupDebug();
+      unregisterNavigationTool();
+    };
   }, []);
 
   const [phase, setPhase] = useState<SplashPhase>(() =>

@@ -16,8 +16,32 @@ export interface ModelContext {
   clearContext(): void;
 }
 
+export interface ModelContextTesting {
+  getTools(): ModelContextTool[] | Promise<ModelContextTool[]>;
+  callTool(
+    name: string,
+    input: Record<string, unknown>,
+  ): Promise<unknown>;
+}
+
+export type WebMCPDebugPage = "dashboard" | "root";
+
+export interface WebMCPDebugHelpers {
+  page: WebMCPDebugPage;
+  expectedDashboardTools: string[];
+  getTools: () => Promise<string[]>;
+  runDashboardChecks: () => Promise<unknown>;
+  runRootChecks: () => Promise<unknown>;
+  run: () => Promise<unknown>;
+}
+
 declare global {
   interface Navigator {
     modelContext?: ModelContext;
+    modelContextTesting?: ModelContextTesting;
+  }
+
+  interface Window {
+    webmcpDebug?: WebMCPDebugHelpers;
   }
 }
