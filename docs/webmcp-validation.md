@@ -45,4 +45,7 @@ typeof navigator.modelContextTesting
 await window.webmcpDebug.getTools()
 await window.webmcpDebug.runDashboardChecks()
 await window.webmcpDebug.runRootChecks()
+window.webmcpDebug.getSpyState()
 ```
+
+If `navigator.modelContextTesting.getTools` is unavailable in your Canary build, use `getSpyState()` to confirm whether your page called `registerTool` and which tool names are currently tracked.

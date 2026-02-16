@@ -133,6 +133,7 @@ function formatStrengthTick(value: number) {
 
 export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: boolean }) {
   useEffect(() => {
+    const cleanupDebug = installWebMCPDebugHelpers("root");
     let registered = false;
     let attempts = 0;
     const maxAttempts = 50;
@@ -155,7 +156,6 @@ export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: b
       timerId = setInterval(tryRegister, 100);
     }
 
-    const cleanupDebug = installWebMCPDebugHelpers("root");
     return () => {
       if (timerId) clearInterval(timerId);
       cleanupDebug();

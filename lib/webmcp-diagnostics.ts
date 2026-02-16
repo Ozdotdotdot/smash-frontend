@@ -16,10 +16,73 @@ type DiagnosticsReport = {
   registeredTools: string[];
   missingTools: string[];
   calls: Record<string, unknown>;
+  spy: {
+    installed: boolean;
+    registerCalls: number;
+    unregisterCalls: number;
+    trackedTools: string[];
+  };
 };
+
+type WebMCPSpyState = {
+  installed: boolean;
+  registerCalls: number;
+  unregisterCalls: number;
+  trackedTools: Set<string>;
+  originalRegisterTool?: (tool: ModelContextTool) => void;
+  originalUnregisterTool?: (name: string) => void;
+};
+
+declare global {
+  interface Window {
+    __webmcpSpyState?: WebMCPSpyState;
+  }
+}
 
 function getExpectedTools(page: WebMCPDebugPage): string[] {
   return page === "dashboard" ? DASHBOARD_EXPECTED_TOOLS : ROOT_EXPECTED_TOOLS;
+}
+
+function getSpyState(): WebMCPSpyState {
+  if (!window.__webmcpSpyState) {
+    window.__webmcpSpyState = {
+      installed: false,
+      registerCalls: 0,
+      unregisterCalls: 0,
+      trackedTools: new Set<string>(),
+    };
+  }
+  return window.__webmcpSpyState;
+}
+
+function installModelContextSpy(): WebMCPSpyState {
+  const spy = getSpyState();
+  if (spy.installed) return spy;
+
+  const modelContext = navigator.modelContext;
+  if (!modelContext) return spy;
+
+  try {
+    spy.originalRegisterTool = modelContext.registerTool.bind(modelContext);
+    spy.originalUnregisterTool = modelContext.unregisterTool.bind(modelContext);
+
+    modelContext.registerTool = (tool: ModelContextTool) => {
+      spy.registerCalls += 1;
+      spy.originalRegisterTool?.(tool);
+      if (tool?.name) spy.trackedTools.add(tool.name);
+    };
+
+    modelContext.unregisterTool = (name: string) => {
+      spy.unregisterCalls += 1;
+      spy.originalUnregisterTool?.(name);
+      spy.trackedTools.delete(name);
+    };
+
+    spy.installed = true;
+  } catch {
+    spy.installed = false;
+  }
+  return spy;
 }
 
 async function getTestingTools(): Promise<ModelContextTool[]> {
@@ -32,6 +95,9 @@ async function getTestingTools(): Promise<ModelContextTool[]> {
 
 export async function getRegisteredToolNames(): Promise<string[]> {
   const tools = await getTestingTools();
+  if (tools.length === 0) {
+    return Array.from(getSpyState().trackedTools);
+  }
   return tools
     .map((tool) => tool?.name)
     .filter((name): name is string => typeof name === "string" && name.length > 0);
@@ -72,6 +138,7 @@ async function callTool(
 export async function runWebMCPDiagnostics(
   page: WebMCPDebugPage,
 ): Promise<DiagnosticsReport> {
+  const spy = getSpyState();
   const expectedTools = getExpectedTools(page);
   const registeredTools = await getRegisteredToolNames();
   const missingTools = expectedTools.filter((name) => !registeredTools.includes(name));
@@ -99,6 +166,12 @@ export async function runWebMCPDiagnostics(
     registeredTools,
     missingTools,
     calls,
+    spy: {
+      installed: spy.installed,
+      registerCalls: spy.registerCalls,
+      unregisterCalls: spy.unregisterCalls,
+      trackedTools: Array.from(spy.trackedTools),
+    },
   };
 }
 
@@ -107,10 +180,21 @@ export function installWebMCPDebugHelpers(page: WebMCPDebugPage): () => void {
     return () => {};
   }
 
+  installModelContextSpy();
+
   const helpers: WebMCPDebugHelpers = {
     page,
     expectedDashboardTools: [...DASHBOARD_EXPECTED_TOOLS],
     getTools: getRegisteredToolNames,
+    getSpyState: () => {
+      const spy = getSpyState();
+      return {
+        installed: spy.installed,
+        registerCalls: spy.registerCalls,
+        unregisterCalls: spy.unregisterCalls,
+        trackedTools: Array.from(spy.trackedTools),
+      };
+    },
     runDashboardChecks: () => runWebMCPDiagnostics("dashboard"),
     runRootChecks: () => runWebMCPDiagnostics("root"),
     run: () => runWebMCPDiagnostics(page),

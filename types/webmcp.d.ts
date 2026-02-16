@@ -30,6 +30,7 @@ export interface WebMCPDebugHelpers {
   page: WebMCPDebugPage;
   expectedDashboardTools: string[];
   getTools: () => Promise<string[]>;
+  getSpyState: () => unknown;
   runDashboardChecks: () => Promise<unknown>;
   runRootChecks: () => Promise<unknown>;
   run: () => Promise<unknown>;
