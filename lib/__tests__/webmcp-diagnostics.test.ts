@@ -71,6 +71,23 @@ describe("webmcp diagnostics helper", () => {
     expect(report.missingTools).toEqual(["getSiteCapabilities"]);
   });
 
+  it("runWebMCPDiagnostics uses execute fallback when callTool is unavailable", async () => {
+    setModelContextTesting({
+      getTools: vi.fn().mockReturnValue([
+        {
+          name: "getSiteCapabilities",
+          execute: vi.fn(async () => ({ tools_available_at: "/dashboard" })),
+        },
+      ]),
+    });
+
+    const report = await runWebMCPDiagnostics("root");
+    expect(report.missingTools).toEqual([]);
+    expect(report.calls.getSiteCapabilities).toEqual({
+      tools_available_at: "/dashboard",
+    });
+  });
+
   it("installWebMCPDebugHelpers attaches and cleans up window.webmcpDebug", () => {
     const cleanup = installWebMCPDebugHelpers("dashboard");
     expect(window.webmcpDebug).toBeDefined();

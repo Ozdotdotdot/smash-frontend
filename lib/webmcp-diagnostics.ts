@@ -42,14 +42,30 @@ async function callTool(
   input: Record<string, unknown>,
 ): Promise<unknown> {
   const testing = navigator.modelContextTesting;
-  if (!testing || typeof testing.callTool !== "function") {
+  if (!testing) {
+    return { error: "modelContextTesting is unavailable" };
+  }
+
+  if (typeof testing.callTool === "function") {
+    try {
+      return await testing.callTool(name, input);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      return { error: "Tool call failed via callTool", details: message };
+    }
+  }
+
+  const tools = await getTestingTools();
+  const tool = tools.find((candidate) => candidate.name === name);
+  if (!tool || typeof tool.execute !== "function") {
     return { error: "modelContextTesting.callTool is unavailable" };
   }
+
   try {
-    return await testing.callTool(name, input);
+    return await tool.execute(input, undefined);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    return { error: "Tool call failed", details: message };
+    return { error: "Tool call failed via execute fallback", details: message };
   }
 }
 

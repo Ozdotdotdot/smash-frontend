@@ -133,9 +133,31 @@ function formatStrengthTick(value: number) {
 
 export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: boolean }) {
   useEffect(() => {
-    registerNavigationTool();
+    let registered = false;
+    let attempts = 0;
+    const maxAttempts = 50;
+    let timerId: ReturnType<typeof setInterval> | undefined;
+
+    const tryRegister = () => {
+      attempts += 1;
+      if (registerNavigationTool()) {
+        registered = true;
+        if (timerId) clearInterval(timerId);
+        return;
+      }
+      if (attempts >= maxAttempts && timerId) {
+        clearInterval(timerId);
+      }
+    };
+
+    tryRegister();
+    if (!registered) {
+      timerId = setInterval(tryRegister, 100);
+    }
+
     const cleanupDebug = installWebMCPDebugHelpers("root");
     return () => {
+      if (timerId) clearInterval(timerId);
       cleanupDebug();
       unregisterNavigationTool();
     };
