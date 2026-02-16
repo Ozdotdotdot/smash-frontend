@@ -14,7 +14,10 @@ import {
 } from "recharts";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { registerNavigationTool, unregisterNavigationTool } from "@/lib/webmcp-navigation";
+import { installWebMCPDebugHelpers } from "@/lib/webmcp-diagnostics";
 import LetterSwapForward from "@/components/fancy/text/letter-swap-forward-anim";
+import type { PlayerPoint } from "@/lib/types";
 
 type SplashPhase = "full" | "compact" | "hidden";
 
@@ -22,14 +25,6 @@ type DataSource = {
   id: string;
   label: string;
   api: string;
-};
-
-type PlayerPoint = {
-  player_id?: number;
-  gamer_tag: string;
-  weighted_win_rate: number;
-  opponent_strength: number;
-  home_state?: string;
 };
 
 type FilteredData = {
@@ -137,6 +132,37 @@ function formatStrengthTick(value: number) {
 }
 
 export default function HomeClient({ initialSkipSplash }: { initialSkipSplash: boolean }) {
+  useEffect(() => {
+    const cleanupDebug = installWebMCPDebugHelpers("root");
+    let registered = false;
+    let attempts = 0;
+    const maxAttempts = 50;
+    let timerId: ReturnType<typeof setInterval> | undefined;
+
+    const tryRegister = () => {
+      attempts += 1;
+      if (registerNavigationTool()) {
+        registered = true;
+        if (timerId) clearInterval(timerId);
+        return;
+      }
+      if (attempts >= maxAttempts && timerId) {
+        clearInterval(timerId);
+      }
+    };
+
+    tryRegister();
+    if (!registered) {
+      timerId = setInterval(tryRegister, 100);
+    }
+
+    return () => {
+      if (timerId) clearInterval(timerId);
+      cleanupDebug();
+      unregisterNavigationTool();
+    };
+  }, []);
+
   const [phase, setPhase] = useState<SplashPhase>(() =>
     initialSkipSplash ? "hidden" : "full"
   );

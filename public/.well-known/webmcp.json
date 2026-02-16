@@ -1,0 +1,27 @@
+{
+  "name": "smash.watch",
+  "description": "Competitive Super Smash Bros. Melee analytics platform. Analyzes tournament performance data from start.gg to identify top performers, hidden bosses, and regional trends.",
+  "tools_url": "/dashboard",
+  "tools": [
+    {
+      "name": "getRegionStats",
+      "description": "Get competitive Smash player performance data for a US state"
+    },
+    {
+      "name": "listTournamentSeries",
+      "description": "Discover recurring tournament series in a region"
+    },
+    {
+      "name": "getTournamentSeriesStats",
+      "description": "Get player stats for a specific tournament series"
+    },
+    {
+      "name": "searchTournament",
+      "description": "Look up a tournament by start.gg URL"
+    },
+    {
+      "name": "getAvailableRegions",
+      "description": "List all supported US state/region codes"
+    }
+  ]
+}
