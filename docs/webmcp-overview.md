@@ -2,9 +2,9 @@
 
 ## What this layer does
 
-smash.watch exposes structured, read-only analytics tools to browser agents via WebMCP (`navigator.modelContext`).
+smash.watch exposes structured analytics tools to browser agents via WebMCP (`navigator.modelContext`).
 
-- On `/dashboard`, the site registers 5 analytics tools.
+- On `/dashboard`, the site registers 5 read-only analytics tools plus 1 UI action tool.
 - On `/`, the site registers a discovery tool (`getSiteCapabilities`) that tells agents to navigate to `/dashboard` for full analytics capabilities.
 
 This is additive-only: if WebMCP is unavailable, the normal website behavior is unchanged.
@@ -16,6 +16,7 @@ This is additive-only: if WebMCP is unavailable, the normal website behavior is 
 - `getTournamentSeriesStats`: player stats for a selected series key.
 - `searchTournament`: stats lookup by start.gg URL/slug.
 - `getAvailableRegions`: supported US state/region codes.
+- `renderRegionDashboard`: UI action tool that applies state filters and triggers dashboard rendering on `/dashboard`.
 - `getSiteCapabilities` (root discovery): describes available tools and points to `/dashboard`.
 
 Implementation references:
@@ -56,12 +57,29 @@ Validated on Chrome Canary 147 with WebMCP testing enabled at `http://localhost:
 
 ### Dashboard (`/dashboard`)
 
-- `registeredTools` included all 5 dashboard tools.
+- `registeredTools` included all 6 dashboard tools.
 - `missingTools` was empty.
 - Spy state showed:
   - `installed: true`
-  - `registerCalls: 5`
-  - `trackedTools` contained the 5 expected tool names.
+  - `registerCalls: 6`
+  - `trackedTools` contained the 6 expected tool names.
+
+## Tool classes and event bridge
+
+- Read-only tools (`getRegionStats`, `listTournamentSeries`, `getTournamentSeriesStats`, `searchTournament`, `getAvailableRegions`) return JSON only.
+- UI action tool (`renderRegionDashboard`) dispatches a browser event and returns an acknowledgement envelope.
+
+Event contract:
+
+- Event name: `smash:webmcp:render`
+- Payload shape:
+  - `target: "dashboard"`
+  - `mode: "state" | "tournament"`
+  - `filters: {...}`
+  - `requestId: string`
+  - `source: "webmcp-tool"`
+
+Current implementation listens for `mode: "state"` on `/dashboard`, maps payload fields into dashboard filter state, and executes the same state query path as manual Apply.
 
 Verification commands used:
 

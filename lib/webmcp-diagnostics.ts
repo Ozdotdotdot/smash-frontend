@@ -165,6 +165,10 @@ export async function runWebMCPDiagnostics(
       state: "GA",
       months_back: 3,
     });
+    calls.renderRegionDashboard = await callTool("renderRegionDashboard", {
+      state: "GA",
+      months_back: 3,
+    });
   } else {
     calls.getSiteCapabilities = await callTool("getSiteCapabilities", {});
   }

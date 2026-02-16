@@ -45,6 +45,7 @@ describe("webmcp diagnostics helper", () => {
       "getTournamentSeriesStats",
       "searchTournament",
       "getAvailableRegions",
+      "renderRegionDashboard",
     ];
 
     setModelContextTesting({
@@ -58,6 +59,10 @@ describe("webmcp diagnostics helper", () => {
     expect(report.calls.getAvailableRegions).toEqual({
       ok: true,
       name: "getAvailableRegions",
+    });
+    expect(report.calls.renderRegionDashboard).toEqual({
+      ok: true,
+      name: "renderRegionDashboard",
     });
   });
 

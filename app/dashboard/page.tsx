@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { Info } from "lucide-react";
 import {
   CartesianGrid,
@@ -31,6 +31,10 @@ import {
 } from "@/components/ui/table";
 import type { PlayerPoint } from "@/lib/types";
 import { useWebMCP } from "@/lib/useWebMCP";
+import {
+  isWebMCPDashboardRenderDetail,
+  WEBMCP_DASHBOARD_RENDER_EVENT,
+} from "@/lib/webmcp-events";
 
 function ToggleLeftIcon({ className }: { className?: string }) {
   return (
@@ -165,6 +169,11 @@ const VIEW_ITEMS: Array<{ value: ViewType; label: string }> = [
   { value: "state", label: "State" },
   { value: "tournament", label: "Tournament" },
 ];
+
+const monthsBackToTimeframe = (monthsBack: number | undefined): StateFilters["timeframe"] => {
+  if (monthsBack === 1) return "30d";
+  return "3m";
+};
 
 function FilterPanel({
   viewType,
@@ -707,6 +716,7 @@ export default function DashboardPage() {
   const [pendingMobileClose, setPendingMobileClose] = useState(false);
   const [particlesFallbackActive, setParticlesFallbackActive] = useState(false);
   const [showParticlesWarning, setShowParticlesWarning] = useState(false);
+  const latestWebMCPRequestId = useRef<string | null>(null);
 
   const handleParticlesInitError = useCallback((error: unknown) => {
     console.error("Dashboard background disabled: WebGL particles failed to initialize.", error);
@@ -729,10 +739,6 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const selectedMonthsBack = useMemo(
-    () => TIMEFRAME_TO_MONTHS[stateFilters.timeframe] ?? 3,
-    [stateFilters.timeframe],
-  );
   const chartPoints = useMemo(
     () =>
       chartData.filter(
@@ -787,34 +793,71 @@ export default function DashboardPage() {
     });
   };
 
-  const buildStateQuery = () => {
+  const buildStateQuery = useCallback((filters: StateFilters) => {
+    const monthsBack = TIMEFRAME_TO_MONTHS[filters.timeframe] ?? 3;
     const params = new URLSearchParams({
-      state: stateFilters.region.trim().toUpperCase(),
-      months_back: String(selectedMonthsBack),
+      state: filters.region.trim().toUpperCase(),
+      months_back: String(monthsBack),
       limit: "0",
     });
-    if (stateFilters.characters.trim()) {
-      const firstCharacter = stateFilters.characters.split(",")[0]?.trim();
+    if (filters.characters.trim()) {
+      const firstCharacter = filters.characters.split(",")[0]?.trim();
       if (firstCharacter) params.set("character", firstCharacter);
     }
     const maybeSet = (key: string, val: string) => {
       if (val.trim().length > 0) params.set(key, val.trim());
     };
-    maybeSet("min_entrants", stateFilters.minEntrants);
-    maybeSet("max_entrants", stateFilters.maxEntrants);
-    maybeSet("min_max_event_entrants", stateFilters.minMaxEventEntrants);
-    maybeSet("large_event_threshold", stateFilters.largeEventThreshold);
-    maybeSet("min_large_event_share", stateFilters.minLargeEventShare);
-    if (stateFilters.startAfter) params.set("start_after", stateFilters.startAfter);
-    if (stateFilters.filterStates.trim()) {
-      stateFilters.filterStates
+    maybeSet("min_entrants", filters.minEntrants);
+    maybeSet("max_entrants", filters.maxEntrants);
+    maybeSet("min_max_event_entrants", filters.minMaxEventEntrants);
+    maybeSet("large_event_threshold", filters.largeEventThreshold);
+    maybeSet("min_large_event_share", filters.minLargeEventShare);
+    if (filters.startAfter) params.set("start_after", filters.startAfter);
+    if (filters.filterStates.trim()) {
+      filters.filterStates
         .split(",")
         .map((s) => s.trim().toUpperCase())
         .filter(Boolean)
         .forEach((code) => params.append("filter_state", code));
     }
     return params;
-  };
+  }, []);
+
+  const runStateQuery = useCallback(
+    (filters: StateFilters, options?: { requestId?: string }) => {
+      const requestId = options?.requestId;
+      const isStale = () =>
+        typeof requestId === "string" &&
+        latestWebMCPRequestId.current !== null &&
+        latestWebMCPRequestId.current !== requestId;
+
+      const params = buildStateQuery(filters);
+      setIsLoading(true);
+      setError(null);
+      fetch(`/api/precomputed?${params.toString()}`, { cache: "no-store" })
+        .then((res) => {
+          if (!res.ok) throw new Error(`API error ${res.status}`);
+          return res.json();
+        })
+        .then((json: { results?: PlayerPoint[] }) => {
+          if (isStale()) return;
+          setChartData(json.results ?? []);
+          if ((json.results ?? []).length === 0) {
+            setError("No data found. Check your state parameter and filters.");
+          }
+        })
+        .catch((err) => {
+          if (isStale()) return;
+          setError(`${(err as Error).message} — check your state parameter and filters.`);
+          setChartData([]);
+        })
+        .finally(() => {
+          if (isStale()) return;
+          setIsLoading(false);
+        });
+    },
+    [buildStateQuery],
+  );
 
   const parseTournamentSlug = (value: string) => {
     const trimmed = value.trim();
@@ -975,25 +1018,8 @@ export default function DashboardPage() {
     }
 
     if (viewType === "state") {
-      const params = buildStateQuery();
-      setIsLoading(true);
-      setError(null);
-    fetch(`/api/precomputed?${params.toString()}`, { cache: "no-store" })
-      .then((res) => {
-        if (!res.ok) throw new Error(`API error ${res.status}`);
-        return res.json();
-      })
-      .then((json: { results?: PlayerPoint[] }) => {
-        setChartData(json.results ?? []);
-        if ((json.results ?? []).length === 0) {
-          setError("No data found. Check your state parameter and filters.");
-        }
-      })
-      .catch((err) => {
-        setError(`${(err as Error).message} — check your state parameter and filters.`);
-        setChartData([]);
-      })
-        .finally(() => setIsLoading(false));
+      latestWebMCPRequestId.current = null;
+      runStateQuery(stateFilters);
       return;
     }
     const hasSeries = tournamentFilters.series.trim().length > 0;
@@ -1134,6 +1160,44 @@ export default function DashboardPage() {
     setSelectedSeriesKey(null);
     setHideOutliers(false);
   };
+
+  useEffect(() => {
+    const onWebMCPRender = (event: Event) => {
+      const custom = event as CustomEvent<unknown>;
+      if (!isWebMCPDashboardRenderDetail(custom.detail)) return;
+      if (custom.detail.target !== "dashboard" || custom.detail.mode !== "state") return;
+
+      const { filters, requestId } = custom.detail;
+      latestWebMCPRequestId.current = requestId;
+
+      const toField = (value: number | undefined) =>
+        value === undefined ? "" : String(value);
+
+      const nextStateFilters: StateFilters = {
+        region: filters.state.toUpperCase(),
+        timeframe: monthsBackToTimeframe(filters.months_back),
+        characters: filters.characters ?? "",
+        filterStates: (filters.filter_state ?? []).join(", "),
+        minEntrants: toField(filters.min_entrants),
+        maxEntrants: toField(filters.max_entrants),
+        minMaxEventEntrants: toField(filters.min_max_event_entrants),
+        largeEventThreshold: toField(filters.large_event_threshold),
+        minLargeEventShare: toField(filters.min_large_event_share),
+        startAfter: filters.start_after ?? "",
+      };
+
+      setViewType("state");
+      setStateFilters(nextStateFilters);
+      setSeriesOptions([]);
+      setSelectedSeriesKey(null);
+      runStateQuery(nextStateFilters, { requestId });
+    };
+
+    window.addEventListener(WEBMCP_DASHBOARD_RENDER_EVENT, onWebMCPRender);
+    return () => {
+      window.removeEventListener(WEBMCP_DASHBOARD_RENDER_EVENT, onWebMCPRender);
+    };
+  }, [runStateQuery]);
 
   useEffect(() => {
     if (!pendingQueryApply) return;

@@ -1,4 +1,8 @@
 import type { ModelContextTool } from "@/types/webmcp";
+import {
+  createWebMCPRequestId,
+  WEBMCP_DASHBOARD_RENDER_EVENT,
+} from "@/lib/webmcp-events";
 
 const AVAILABLE_REGIONS = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
@@ -27,6 +31,57 @@ async function safeFetch(
     const message = err instanceof Error ? err.message : String(err);
     return { error: "Fetch failed", details: message };
   }
+}
+
+function toFiniteNumberOrUndefined(value: unknown): number | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return undefined;
+}
+
+function toCsvStringArray(value: unknown): string[] | undefined {
+  if (Array.isArray(value)) {
+    const normalized = value
+      .map((item) => String(item).trim().toUpperCase())
+      .filter(Boolean);
+    return normalized.length ? normalized : undefined;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value
+      .split(",")
+      .map((item) => item.trim().toUpperCase())
+      .filter(Boolean);
+    return normalized.length ? normalized : undefined;
+  }
+
+  return undefined;
+}
+
+function parseRegionStateInput(input: Record<string, unknown>) {
+  const stateRaw = input.state;
+  if (typeof stateRaw !== "string" || !stateRaw.trim()) {
+    return {
+      ok: false as const,
+      error: "Validation failed",
+      details: "state is required and must be a non-empty US state code",
+    };
+  }
+
+  const state = stateRaw.trim().toUpperCase();
+  if (!AVAILABLE_REGIONS.includes(state as (typeof AVAILABLE_REGIONS)[number])) {
+    return {
+      ok: false as const,
+      error: "Validation failed",
+      details: `Unsupported state code: ${state}`,
+    };
+  }
+
+  return { ok: true as const, state };
 }
 
 export const SMASH_TOOLS: ModelContextTool[] = [
@@ -178,6 +233,133 @@ export const SMASH_TOOLS: ModelContextTool[] = [
     annotations: { readOnlyHint: true },
     async execute() {
       return { regions: AVAILABLE_REGIONS };
+    },
+  },
+  {
+    name: "renderRegionDashboard",
+    description:
+      "Trigger the /dashboard page UI to render the state analytics view with provided filters. This is a UI action tool (not read-only data retrieval).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        state: {
+          type: "string",
+          description: "US state code",
+          enum: AVAILABLE_REGIONS as unknown as string[],
+        },
+        months_back: {
+          type: "number",
+          description: "Number of months to look back (maps to dashboard timeframe)",
+        },
+        characters: {
+          type: "string",
+          description: "Comma-separated character filter terms",
+        },
+        filter_state: {
+          description: "State filter(s) to apply in addition to primary state",
+          oneOf: [
+            { type: "string" },
+            {
+              type: "array",
+              items: { type: "string" },
+            },
+          ],
+        },
+        min_entrants: {
+          type: "number",
+          description: "Minimum average entrants threshold",
+        },
+        max_entrants: {
+          type: "number",
+          description: "Maximum average entrants threshold",
+        },
+        min_max_event_entrants: {
+          type: "number",
+          description: "Minimum max entrants among a player's events",
+        },
+        large_event_threshold: {
+          type: "number",
+          description: "Entrant cutoff treated as a large event",
+        },
+        min_large_event_share: {
+          type: "number",
+          description: "Minimum share (0-1) of large events",
+        },
+        start_after: {
+          type: "string",
+          description: "Date string (YYYY-MM-DD)",
+        },
+      },
+      required: ["state"],
+    },
+    annotations: { readOnlyHint: false },
+    async execute(input: Record<string, unknown>) {
+      const parsed = parseRegionStateInput(input);
+      if (!parsed.ok) {
+        return {
+          ok: false,
+          reason: "invalid_input",
+          error: parsed.error,
+          details: parsed.details,
+        };
+      }
+
+      if (typeof window === "undefined") {
+        return {
+          ok: false,
+          reason: "not_browser_context",
+          error: "Dashboard rendering events can only be dispatched in a browser context",
+        };
+      }
+
+      if (window.location.pathname !== "/dashboard") {
+        return {
+          ok: false,
+          reason: "dashboard_not_active",
+          error: "Open /dashboard before calling renderRegionDashboard",
+        };
+      }
+
+      const requestId = createWebMCPRequestId();
+      const monthsBack = toFiniteNumberOrUndefined(input.months_back);
+      const minEntrants = toFiniteNumberOrUndefined(input.min_entrants);
+      const maxEntrants = toFiniteNumberOrUndefined(input.max_entrants);
+      const minMaxEventEntrants = toFiniteNumberOrUndefined(input.min_max_event_entrants);
+      const largeEventThreshold = toFiniteNumberOrUndefined(input.large_event_threshold);
+      const minLargeEventShare = toFiniteNumberOrUndefined(input.min_large_event_share);
+      const startAfter = typeof input.start_after === "string" ? input.start_after : undefined;
+      const characters = typeof input.characters === "string" ? input.characters : undefined;
+      const filterState = toCsvStringArray(input.filter_state);
+
+      const detail = {
+        target: "dashboard" as const,
+        mode: "state" as const,
+        requestId,
+        source: "webmcp-tool" as const,
+        filters: {
+          state: parsed.state,
+          months_back: monthsBack,
+          characters,
+          filter_state: filterState,
+          min_entrants: minEntrants,
+          max_entrants: maxEntrants,
+          min_max_event_entrants: minMaxEventEntrants,
+          large_event_threshold: largeEventThreshold,
+          min_large_event_share: minLargeEventShare,
+          start_after: startAfter,
+        },
+      };
+
+      window.dispatchEvent(new CustomEvent(WEBMCP_DASHBOARD_RENDER_EVENT, { detail }));
+
+      return {
+        ok: true,
+        actionId: requestId,
+        target: "/dashboard",
+        mode: "state",
+        applied: detail.filters,
+        message: "Dashboard render request dispatched.",
+      };
     },
   },
 ];

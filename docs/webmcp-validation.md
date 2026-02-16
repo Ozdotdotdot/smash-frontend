@@ -2,7 +2,7 @@
 
 This project exposes WebMCP tools on:
 
-- `/dashboard`: `getRegionStats`, `listTournamentSeries`, `getTournamentSeriesStats`, `searchTournament`, `getAvailableRegions`
+- `/dashboard`: `getRegionStats`, `listTournamentSeries`, `getTournamentSeriesStats`, `searchTournament`, `getAvailableRegions`, `renderRegionDashboard`
 - `/`: `getSiteCapabilities`
 
 In development builds, a helper is exposed at `window.webmcpDebug`.
@@ -24,6 +24,7 @@ Expected:
 - `checks.modelContextTestingType === "object"`
 - `missingTools` is empty
 - `calls.getAvailableRegions` returns `{ regions: [...] }`
+- `calls.renderRegionDashboard.ok === true` when run on `/dashboard`
 
 3. On `/` run:
 

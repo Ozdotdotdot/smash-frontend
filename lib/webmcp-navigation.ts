@@ -20,6 +20,7 @@ const SITE_CAPABILITIES_TOOL = {
         "getTournamentSeriesStats - Stats for a specific tournament series",
         "searchTournament - Look up tournaments by start.gg URL",
         "getAvailableRegions - List supported US state/region codes",
+        "renderRegionDashboard - Render dashboard state view from an MCP tool call",
       ],
     };
   },

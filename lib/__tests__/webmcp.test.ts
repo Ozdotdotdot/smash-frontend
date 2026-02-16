@@ -45,7 +45,7 @@ describe("Registration tests", () => {
     expect(mockModelContext.registerTool).toHaveBeenCalled();
   });
 
-  it("registerTool() is called exactly 5 times (one per tool)", () => {
+  it("registerTool() is called exactly 6 times (one per tool)", () => {
     const mockModelContext = {
       registerTool: vi.fn(),
       unregisterTool: vi.fn(),
@@ -53,7 +53,7 @@ describe("Registration tests", () => {
     setModelContext(mockModelContext);
 
     registerSmashTools();
-    expect(mockModelContext.registerTool).toHaveBeenCalledTimes(5);
+    expect(mockModelContext.registerTool).toHaveBeenCalledTimes(6);
   });
 
   it("unregisterSmashTools() calls unregisterTool() for each tool name when API exists", () => {
@@ -64,7 +64,7 @@ describe("Registration tests", () => {
     setModelContext(mockModelContext);
 
     unregisterSmashTools();
-    expect(mockModelContext.unregisterTool).toHaveBeenCalledTimes(5);
+    expect(mockModelContext.unregisterTool).toHaveBeenCalledTimes(6);
     for (const tool of SMASH_TOOLS) {
       expect(mockModelContext.unregisterTool).toHaveBeenCalledWith(tool.name);
     }
@@ -90,10 +90,26 @@ describe("Tool schema validation tests", () => {
     }
   });
 
-  it("all tools have annotations.readOnlyHint === true", () => {
-    for (const tool of SMASH_TOOLS) {
-      expect(tool.annotations?.readOnlyHint).toBe(true);
+  it("read-only data tools have annotations.readOnlyHint === true", () => {
+    const dataToolNames = [
+      "getRegionStats",
+      "listTournamentSeries",
+      "getTournamentSeriesStats",
+      "searchTournament",
+      "getAvailableRegions",
+    ];
+
+    for (const toolName of dataToolNames) {
+      const tool = SMASH_TOOLS.find((t) => t.name === toolName);
+      expect(tool).toBeDefined();
+      expect(tool!.annotations?.readOnlyHint).toBe(true);
     }
+  });
+
+  it("renderRegionDashboard is explicitly marked as non-read-only", () => {
+    const tool = SMASH_TOOLS.find((t) => t.name === "renderRegionDashboard");
+    expect(tool).toBeDefined();
+    expect(tool!.annotations?.readOnlyHint).toBe(false);
   });
 
   it("each tool's inputSchema has type: 'object' at root", () => {
@@ -203,6 +219,62 @@ describe("Execute callback tests", () => {
     expect(result.regions).toContain("CA");
     expect(result.regions).toContain("NY");
   });
+
+  it("renderRegionDashboard returns invalid_input when state is missing", async () => {
+    const tool = SMASH_TOOLS.find((t) => t.name === "renderRegionDashboard")!;
+    const result = (await tool.execute({}, undefined)) as {
+      ok: boolean;
+      reason?: string;
+    };
+
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe("invalid_input");
+  });
+
+  it("renderRegionDashboard returns dashboard_not_active outside /dashboard", async () => {
+    window.history.pushState({}, "", "/");
+    const dispatchSpy = vi.spyOn(window, "dispatchEvent");
+    const tool = SMASH_TOOLS.find((t) => t.name === "renderRegionDashboard")!;
+
+    const result = (await tool.execute({ state: "GA" }, undefined)) as {
+      ok: boolean;
+      reason?: string;
+    };
+
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe("dashboard_not_active");
+    expect(dispatchSpy).not.toHaveBeenCalled();
+  });
+
+  it("renderRegionDashboard dispatches a render event on /dashboard and returns ack", async () => {
+    window.history.pushState({}, "", "/dashboard");
+    const dispatchSpy = vi.spyOn(window, "dispatchEvent");
+    const tool = SMASH_TOOLS.find((t) => t.name === "renderRegionDashboard")!;
+
+    const result = (await tool.execute(
+      {
+        state: "GA",
+        months_back: 3,
+        min_entrants: 32,
+        filter_state: "GA, FL",
+      },
+      undefined,
+    )) as {
+      ok: boolean;
+      actionId?: string;
+      target?: string;
+      mode?: string;
+      applied?: { state?: string; filter_state?: string[] };
+    };
+
+    expect(result.ok).toBe(true);
+    expect(result.actionId).toBeTruthy();
+    expect(result.target).toBe("/dashboard");
+    expect(result.mode).toBe("state");
+    expect(result.applied?.state).toBe("GA");
+    expect(result.applied?.filter_state).toEqual(["GA", "FL"]);
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("Navigation tool tests", () => {
@@ -225,7 +297,7 @@ describe("Navigation tool tests", () => {
     expect(registeredTool.name).toBe("getSiteCapabilities");
   });
 
-  it("getSiteCapabilities execute callback returns object with tools_available_at and lists all 5 tool names", async () => {
+  it("getSiteCapabilities execute callback returns object with tools_available_at and lists all 6 dashboard tool names", async () => {
     const mockModelContext = {
       registerTool: vi.fn(),
       unregisterTool: vi.fn(),
@@ -241,7 +313,7 @@ describe("Navigation tool tests", () => {
     };
 
     expect(result.tools_available_at).toBe("/dashboard");
-    expect(result.available_tools).toHaveLength(5);
+    expect(result.available_tools).toHaveLength(6);
 
     const toolNames = [
       "getRegionStats",
@@ -249,6 +321,7 @@ describe("Navigation tool tests", () => {
       "getTournamentSeriesStats",
       "searchTournament",
       "getAvailableRegions",
+      "renderRegionDashboard",
     ];
     for (const name of toolNames) {
       const found = result.available_tools.some((entry: string) =>
