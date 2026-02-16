@@ -147,13 +147,7 @@ type TournamentFilters = {
   startAfter: string;
 };
 
-type PlayerPoint = {
-  player_id?: number;
-  gamer_tag: string;
-  weighted_win_rate: number;
-  opponent_strength: number;
-  home_state?: string;
-};
+import type { PlayerPoint } from "@/lib/types";
 const playerKey = (row: PlayerPoint) => String(row.player_id ?? row.gamer_tag ?? "");
 
 const TIMEFRAME_OPTIONS = [
