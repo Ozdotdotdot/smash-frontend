@@ -1,4 +1,4 @@
-interface ModelContextTool {
+export interface ModelContextTool {
   name: string;
   description: string;
   inputSchema?: Record<string, unknown>;
@@ -9,7 +9,7 @@ interface ModelContextTool {
   annotations?: { readOnlyHint?: boolean };
 }
 
-interface ModelContext {
+export interface ModelContext {
   registerTool(tool: ModelContextTool): void;
   unregisterTool(name: string): void;
   provideContext(options: { tools: ModelContextTool[] }): void;
@@ -21,5 +21,3 @@ declare global {
     modelContext?: ModelContext;
   }
 }
-
-export {};
