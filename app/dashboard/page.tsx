@@ -29,6 +29,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { PlayerPoint } from "@/lib/types";
+import { useWebMCP } from "@/lib/useWebMCP";
 
 function ToggleLeftIcon({ className }: { className?: string }) {
   return (
@@ -147,7 +149,6 @@ type TournamentFilters = {
   startAfter: string;
 };
 
-import type { PlayerPoint } from "@/lib/types";
 const playerKey = (row: PlayerPoint) => String(row.player_id ?? row.gamer_tag ?? "");
 
 const TIMEFRAME_OPTIONS = [
@@ -662,6 +663,7 @@ function FilterPanel({
 }
 
 export default function DashboardPage() {
+  useWebMCP();
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
   const [viewType, setViewType] = useState<ViewType>("state");
