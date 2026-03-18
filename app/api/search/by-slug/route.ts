@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { SMASH_API_BASE } from "../../config";
 
-const REMOTE_BASE = "https://server.cetacean-tuna.ts.net/search/by-slug";
+const REMOTE_BASE = `${SMASH_API_BASE}/search/by-slug`;
 const DEFAULTS: Record<string, string> = {
   videogame_id: "1386",
   limit: "0",

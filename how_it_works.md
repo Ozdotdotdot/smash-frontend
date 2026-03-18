@@ -30,7 +30,7 @@ A custom REST API serves as the interface between the database and client applic
 
 Example endpoint:
 ```
-https://server.cetacean-tuna.ts.net/precomputed?state=GA&months_back=3&limit=0
+https://server.cetacean-tuna.ts.net/smashapi/precomputed?state=GA&months_back=3&limit=0
 ```
 
 This endpoint returns precomputed weighted win rates and opponent strength averages for all players in Georgia over the last three months. The API architecture allows for flexible querying while maintaining separation between data storage and presentation layers.

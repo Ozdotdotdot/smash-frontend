@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { SMASH_API_BASE } from "../config";
 
-const REMOTE_BASE = "https://server.cetacean-tuna.ts.net/precomputed_series";
+const REMOTE_BASE = `${SMASH_API_BASE}/precomputed_series`;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
