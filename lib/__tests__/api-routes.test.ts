@@ -81,7 +81,7 @@ describe("API route handlers return JSON", () => {
     expect(body).toEqual(upstreamPayloads["search/by-slug"]);
   });
 
-  it("all routes forward requests to SMASH_API_BASE (smashapi path)", async () => {
+  it("all routes forward requests to SMASH_API_BASE", async () => {
     const routes = [
       { path: "precomputed", module: "@/app/api/precomputed/route" },
       { path: "precomputed_series", module: "@/app/api/precomputed_series/route" },
@@ -101,7 +101,7 @@ describe("API route handlers return JSON", () => {
 
       const calledUrl = fetchMock.mock.calls[0][0] as string;
       expect(calledUrl).toContain(SMASH_API_BASE);
-      expect(calledUrl).toContain(`/smashapi/${route.path}`);
+      expect(calledUrl).toContain(`${SMASH_API_BASE}/${route.path}`);
 
       vi.restoreAllMocks();
     }
